@@ -183,15 +183,29 @@ def collect_issues(excluded_reporters: set[str]) -> list[dict]:
     print(f"[INFO] Raw issues fetched: {len(issues)}")
 
     filtered: list[dict] = []
+    excluded_count = 0
+    missing_reporter_count = 0
+
     for issue in issues:
-        reporter = (issue.get("fields", {}).get("reporter") or {}).get("accountId", "")
-        if reporter in excluded_reporters:
+        fields = issue.get("fields", {}) or {}
+        reporter_obj = fields.get("reporter") or {}
+        reporter_id = reporter_obj.get("accountId")
+
+        # Exclude ONLY when accountId exists and is in exclusion list
+        if reporter_id and reporter_id in excluded_reporters:
+            excluded_count += 1
             continue
+
+        # Keep issue even if reporter_id is missing
+        if not reporter_id:
+            missing_reporter_count += 1
+
         filtered.append(issue)
 
+    print(f"[INFO] Excluded by reporter list: {excluded_count}")
+    print(f"[INFO] Missing reporter accountId: {missing_reporter_count}")
     print(f"[INFO] Issues after exclusion: {len(filtered)}")
     return filtered
-
 
 # ---------------------------------------------------------------------------
 # Analysis helpers
