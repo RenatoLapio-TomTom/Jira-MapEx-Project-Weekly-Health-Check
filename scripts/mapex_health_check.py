@@ -131,25 +131,28 @@ def jira_search(jql: str, fields: list[str], expand: list[str] | None = None) ->
         if expand:
             params["expand"] = ",".join(expand)
 
-        # Primary endpoint (new Jira Cloud behavior)
+        # New Jira endpoint
         data = jira_get("/search/jql", params=params)
 
-        # Helpful debug
-        total = data.get("total", 0)
-        batch = data.get("issues", [])
+        # Debug what Jira actually returns
+        print(f"[DEBUG] response keys: {list(data.keys())}")
+
+        # Compatible extraction (different tenants may use different keys)
+        batch = data.get("issues") or data.get("values") or []
+        total = data.get("total", len(batch))
+
         print(f"[DEBUG] jira_search page startAt={start_at} batch={len(batch)} total={total}")
 
-        # Some tenants can respond differently; fallback to /search if needed
-        if start_at == 0 and total == 0 and len(batch) == 0:
+        # If first page is empty, try fallback endpoint once
+        if start_at == 0 and len(batch) == 0:
             try:
                 data2 = jira_get("/search", params=params)
-                total2 = data2.get("total", 0)
-                batch2 = data2.get("issues", [])
+                batch2 = data2.get("issues") or data2.get("values") or []
+                total2 = data2.get("total", len(batch2))
                 print(f"[DEBUG] fallback /search page startAt={start_at} batch={len(batch2)} total={total2}")
-                if total2 > 0 or len(batch2) > 0:
-                    data = data2
-                    total = total2
+                if len(batch2) > 0:
                     batch = batch2
+                    total = total2
             except Exception as e:
                 print(f"[DEBUG] fallback /search failed: {e}")
 
@@ -163,7 +166,6 @@ def jira_search(jql: str, fields: list[str], expand: list[str] | None = None) ->
             break
 
     return issues
-
 
 def fetch_changelog(issue_key: str) -> list[dict]:
     """Fetch all changelog entries for an issue."""
