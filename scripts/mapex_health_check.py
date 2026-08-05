@@ -938,4 +938,5 @@ def main() -> None:
     page_title = f"Jira MapEx Project Health Check Report - {TODAY}"
     print(f"[INFO] Publishing to Confluence as '{page_title}' ...")
     publish_to_confluence(page_title, report_md)
-    print("[INFO] Done.")
+    print("[MARKER] publish_to_confluence returned successfully", flush=True)
+    print("[INFO] Done.", flush=True)
