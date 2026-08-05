@@ -13,9 +13,9 @@ _Generated on 2026-08-05 by automated GitHub Actions workflow._
 
 **Schedule Health:**
 
-- 27 overdue (2 critical, 6 high)
+- 26 overdue (2 critical, 6 high)
 - 2 blocked tickets with due dates
-- 29 due within 14 days, not started
+- 30 due within 14 days, not started
 - 3 stale (no update 30+ days)
 
 **Top 5 Urgent Tickets:**
@@ -76,7 +76,6 @@ Tickets that are overdue, blocked, stale, or at risk of missing their deadline. 
 | MAPEX-10552 | MSFT ACI NSM Support - East Europe & Central Asia - JULY 2026 | In Progress | 2026-07-31 | — | 5 | Dario Spinazzola | Critical | Open Overdue | Medium |
 | MAPEX-10387 | Onboarding & Training for Szabolcs | In Progress | 2026-07-31 | — | 5 | Szabolcs Szász | Major | Open Overdue | Medium |
 | MAPEX-11441 | IND Orbis Admin Area Maintenance: source validation Q3 POC | Backlog | 2026-08-03 | — | 2 | Nikki Royce | Major | Open Overdue | Medium |
-| MAPEX-11467 | Q3 APT Maintenance - Open data — ZAF_Queries | Backlog | 2026-08-04 | — | 1 | Daniel Jooste | Major | Open Overdue | Medium |
 | MAPEX-11452 | Source Validation Support - Q3Postal - NOR | Backlog | 2026-08-04 | — | 1 | Nikki Royce | Major | Open Overdue | Medium |
 | MAPEX-11417 | Required exonyms in multiple languages for Kumpupintil Lake | Backlog | 2026-08-04 | — | 1 | Dario Spinazzola | Major | Open Overdue | Medium |
 | MAPEX-11263 | Surface RM in LM (LM) | In Progress | 2026-08-04 | — | 1 | Daniel Roy | Major | Open Overdue | Medium |
@@ -90,6 +89,7 @@ Tickets that are overdue, blocked, stale, or at risk of missing their deadline. 
 | MAPEX-11565 | Need to support for OM-372756 (Q3 Street Name Centerline Maintenance - Open data — AUS Source Prep) | Backlog | 2026-08-07 | — | n/a | Natasha Klinghardt | Critical | Due Soon – Not Started | Medium |
 | MAPEX-11538 | Truck restriction at Wrocław - Poland | Backlog | 2026-08-06 | — | n/a | Dario Spinazzola | Major | Due Soon – Not Started | Medium |
 | MAPEX-11503 | LTU Orbis Admin area source validation Q3 | Backlog | 2026-08-06 | — | n/a | Nikki Royce | Major | Due Soon – Not Started | Medium |
+| MAPEX-11467 | Q3 APT Maintenance - Open data — ZAF_Queries | Backlog | 2026-08-07 | — | n/a | Daniel Jooste | Major | Due Soon – Not Started | Medium |
 | MAPEX-11464 | Assess and determine causes of RNF for restriction islands | Backlog | 2026-08-14 | — | n/a | Supannachat Metta | Major | Due Soon – Not Started | Medium |
 | MAPEX-11444 | TTI - QC August-September 2026 - Global Events - AME | Open | 2026-08-07 | — | n/a | Luca Comi | Major | Due Soon – Not Started | Medium |
 | MAPEX-11440 | EST SCaaS: Street Name Pair Validation by Native Estonian Speakers — EST | Backlog | 2026-08-14 | — | n/a | Anna Mesterhazy | Major | Due Soon – Not Started | Medium |
@@ -145,7 +145,6 @@ The table below lists all flagged tickets (excluding _Due Soon – Not Started_ 
 | MAPEX-10552 | Dario Spinazzola | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
 | MAPEX-10387 | Szabolcs Szász | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
 | MAPEX-11441 | Nikki Royce | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
-| MAPEX-11467 | Daniel Jooste | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
 | MAPEX-11452 | Nikki Royce | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
 | MAPEX-11417 | Dario Spinazzola | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
 | MAPEX-11263 | Daniel Roy | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
