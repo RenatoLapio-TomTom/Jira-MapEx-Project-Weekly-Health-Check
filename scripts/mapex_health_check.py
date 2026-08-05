@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """
-MAPEX Jira Project Weekly Health Check
-Generates a Markdown health report and publishes it to Confluence.
+...
 """
 
+print("=== SCRIPT FILE LOADED ===", flush=True)
+
 from __future__ import annotations
+...
 
 import json
 import os
