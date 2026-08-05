@@ -132,6 +132,7 @@ def jira_post(path: str, json_body: dict) -> dict:
 
 
 def jira_search(jql: str, fields: list[str], expand: list[str] | None = None) -> list[dict]:
+    """Search Jira issues via /rest/api/3/search/jql with token-based pagination."""
     issues: list[dict] = []
     next_page_token: str | None = None
     max_results = 100
@@ -154,8 +155,8 @@ def jira_search(jql: str, fields: list[str], expand: list[str] | None = None) ->
         next_page_token = data.get("nextPageToken")
 
         print(
-            f"[DEBUG] jira_search batch={len(batch)} isLast={is_last} "
-            f"nextPageToken={'yes' if next_page_token else 'no'}"
+            f"[DEBUG] jira_search batch={len(batch)} "
+            f"isLast={is_last} nextPageToken={'yes' if next_page_token else 'no'}"
         )
 
         issues.extend(batch)
@@ -165,11 +166,7 @@ def jira_search(jql: str, fields: list[str], expand: list[str] | None = None) ->
 
     return issues
 
-def jira_whoami() -> None:
-    data = jira_get("/myself")
-    print(f"[DEBUG] Jira API user accountId: {data.get('accountId')}")
-    print(f"[DEBUG] Jira API user displayName: {data.get('displayName')}")
-    print(f"[DEBUG] Jira API user email: {data.get('emailAddress')}")
+
 
 def fetch_changelog(issue_key: str) -> list[dict]:
     """Fetch all changelog entries for an issue."""
@@ -199,7 +196,7 @@ FIELDS = [
 
 def collect_issues(excluded_reporters: set[str]) -> list[dict]:
     since_str = (TODAY_DT - __import__("datetime").timedelta(days=LOOKBACK_DAYS)).strftime("%Y-%m-%d")
-    jql = f'project = "{PROJECT_KEY}" ORDER BY created DESC'
+   jql = f'project = "{PROJECT_KEY}" AND created >= -{LOOKBACK_DAYS}d ORDER BY created DESC'
     print(f"[INFO] JQL: {jql}")
     issues = jira_search(jql, FIELDS, expand=["changelog"])
     print(f"[INFO] Raw issues fetched: {len(issues)}")
@@ -915,7 +912,6 @@ def publish_to_confluence(title: str, content_md: str) -> None:
 
 def main() -> None:
     print(f"[INFO] MAPEX Health Check starting — report date {TODAY}")
-    jira_whoami()
     excluded = load_excluded_reporters()
     print(f"[INFO] Loaded {len(excluded)} excluded reporter account IDs")
     history = load_disputed_history()
@@ -943,7 +939,3 @@ def main() -> None:
     print(f"[INFO] Publishing to Confluence as '{page_title}' ...")
     publish_to_confluence(page_title, report_md)
     print("[INFO] Done.")
-
-
-if __name__ == "__main__":
-    main()
