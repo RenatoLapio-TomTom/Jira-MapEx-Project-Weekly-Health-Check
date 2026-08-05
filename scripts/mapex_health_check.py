@@ -165,6 +165,12 @@ def jira_search(jql: str, fields: list[str], expand: list[str] | None = None) ->
 
     return issues
 
+def jira_whoami() -> None:
+    data = jira_get("/myself")
+    print(f"[DEBUG] Jira API user accountId: {data.get('accountId')}")
+    print(f"[DEBUG] Jira API user displayName: {data.get('displayName')}")
+    print(f"[DEBUG] Jira API user email: {data.get('emailAddress')}")
+
 def fetch_changelog(issue_key: str) -> list[dict]:
     """Fetch all changelog entries for an issue."""
     histories: list[dict] = []
@@ -193,7 +199,7 @@ FIELDS = [
 
 def collect_issues(excluded_reporters: set[str]) -> list[dict]:
     since_str = (TODAY_DT - __import__("datetime").timedelta(days=LOOKBACK_DAYS)).strftime("%Y-%m-%d")
-    jql = f'project = "{PROJECT_KEY}" AND created >= -{LOOKBACK_DAYS}d ORDER BY created DESC'
+    jql = f'project = "{PROJECT_KEY}" ORDER BY created DESC'
     print(f"[INFO] JQL: {jql}")
     issues = jira_search(jql, FIELDS, expand=["changelog"])
     print(f"[INFO] Raw issues fetched: {len(issues)}")
@@ -909,6 +915,7 @@ def publish_to_confluence(title: str, content_md: str) -> None:
 
 def main() -> None:
     print(f"[INFO] MAPEX Health Check starting — report date {TODAY}")
+    jira_whoami()
     excluded = load_excluded_reporters()
     print(f"[INFO] Loaded {len(excluded)} excluded reporter account IDs")
     history = load_disputed_history()
