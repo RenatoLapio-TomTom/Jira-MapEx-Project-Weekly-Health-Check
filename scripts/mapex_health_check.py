@@ -911,7 +911,7 @@ def publish_to_confluence(title: str, content_md: str) -> None:
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    print(f"[INFO] MAPEX Health Check starting — report date {TODAY}")
+    print(f"[INFO] MAPEX Health Check starting — report date {TODAY}", flush=True)
     excluded = load_excluded_reporters()
     print(f"[INFO] Loaded {len(excluded)} excluded reporter account IDs")
     history = load_disputed_history()
