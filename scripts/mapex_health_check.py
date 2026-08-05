@@ -5,7 +5,6 @@ Generates a Markdown health report and publishes it to Confluence.
 """
 
 from __future__ import annotations
-print("=== SCRIPT FILE LOADED ===", flush=True)
 
 
 import json
@@ -940,7 +939,6 @@ def main() -> None:
     page_title = f"Jira MapEx Project Health Check Report - {TODAY}"
     print(f"[INFO] Publishing to Confluence as '{page_title}' ...")
     publish_to_confluence(page_title, report_md)
-    print("[MARKER] publish_to_confluence returned successfully", flush=True)
     print("[INFO] Done.", flush=True)
 
 
