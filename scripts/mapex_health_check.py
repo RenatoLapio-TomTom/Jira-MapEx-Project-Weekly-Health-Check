@@ -103,17 +103,8 @@ def days_between(a: date, b: date) -> int:
 # Jira API
 # ---------------------------------------------------------------------------
 
-def jira_get(path: str, params: dict | None = None) -> Any:
-    url = f"{JIRA_BASE_URL}/rest/api/3{path}"
-    resp = requests.get(url, auth=jira_auth(), params=params, timeout=30)
-    if not resp.ok:
-        print(f"[ERROR] Jira GET {path} -> {resp.status_code}: {resp.text[:300]}", file=sys.stderr)
-        resp.raise_for_status()
-    return resp.json()
-
-
-def jira_search(jql, fields, expand=None):
-    issues = []
+def jira_search(jql: str, fields: list[str], expand: list[str] | None = None) -> list[dict]:
+    issues: list[dict] = []
     start_at = 0
     max_results = 100
 
@@ -127,23 +118,35 @@ def jira_search(jql, fields, expand=None):
         if expand:
             params["expand"] = ",".join(expand)
 
-        # New endpoint first (required on newer Jira Cloud tenants)
-        try:
-            data = jira_get("/search/jql", params=params)
-        except requests.HTTPError as e:
-            status = e.response.status_code if e.response is not None else None
-            # Fallback for older tenants still on /search
-            if status in (400, 404, 410):
-                data = jira_get/jql("/search", params=params)
-            else:
-                raise
+        # Primary endpoint (new Jira Cloud behavior)
+        data = jira_get("/search/jql", params=params)
 
+        # Helpful debug
+        total = data.get("total", 0)
         batch = data.get("issues", [])
+        print(f"[DEBUG] jira_search page startAt={start_at} batch={len(batch)} total={total}")
+
+        # Some tenants can respond differently; fallback to /search if needed
+        if start_at == 0 and total == 0 and len(batch) == 0:
+            try:
+                data2 = jira_get("/search", params=params)
+                total2 = data2.get("total", 0)
+                batch2 = data2.get("issues", [])
+                print(f"[DEBUG] fallback /search page startAt={start_at} batch={len(batch2)} total={total2}")
+                if total2 > 0 or len(batch2) > 0:
+                    data = data2
+                    total = total2
+                    batch = batch2
+            except Exception as e:
+                print(f"[DEBUG] fallback /search failed: {e}")
+
         issues.extend(batch)
 
-        total = data.get("total", 0)
+        if not batch:
+            break
+
         start_at += len(batch)
-        if start_at >= total or not batch:
+        if start_at >= total:
             break
 
     return issues
