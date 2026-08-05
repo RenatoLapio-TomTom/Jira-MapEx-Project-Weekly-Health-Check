@@ -194,35 +194,35 @@ FIELDS = [
 ]
 
 
-def collect_issues(excluded_reporters: set[str]) -> list[dict]:
-    since_str = (TODAY_DT - __import__("datetime").timedelta(days=LOOKBACK_DAYS)).strftime("%Y-%m-%d")
-   jql = f'project = "{PROJECT_KEY}" AND created >= -{LOOKBACK_DAYS}d ORDER BY created DESC'
+def collect_issues(excluded_reporter_ids: set[str]) -> list[dict]:
+    fields = [
+        "summary", "status", "resolution", "resolutiondate",
+        "created", "updated", "duedate", "assignee", "reporter",
+        "priority", "comment", "issuetype"
+    ]
+    expand = ["changelog"]
+
+    jql = f'project = "{PROJECT_KEY}" AND created >= -{LOOKBACK_DAYS}d ORDER BY created DESC'
     print(f"[INFO] JQL: {jql}")
-    issues = jira_search(jql, FIELDS, expand=["changelog"])
-    print(f"[INFO] Raw issues fetched: {len(issues)}")
+    raw = jira_search(jql, fields=fields, expand=expand)
+    print(f"[INFO] Raw issues fetched: {len(raw)}")
 
     filtered: list[dict] = []
     excluded_count = 0
-    missing_reporter_count = 0
+    missing_reporter_id = 0
 
-    for issue in issues:
-        fields = issue.get("fields", {}) or {}
-        reporter_obj = fields.get("reporter") or {}
-        reporter_id = reporter_obj.get("accountId")
-
-        # Exclude ONLY when accountId exists and is in exclusion list
-        if reporter_id and reporter_id in excluded_reporters:
+    for issue in raw:
+        reporter = ((issue.get("fields") or {}).get("reporter") or {})
+        rid = reporter.get("accountId")
+        if not rid:
+            missing_reporter_id += 1
+        if rid in excluded_reporter_ids:
             excluded_count += 1
             continue
-
-        # Keep issue even if reporter_id is missing
-        if not reporter_id:
-            missing_reporter_count += 1
-
         filtered.append(issue)
 
     print(f"[INFO] Excluded by reporter list: {excluded_count}")
-    print(f"[INFO] Missing reporter accountId: {missing_reporter_count}")
+    print(f"[INFO] Missing reporter accountId: {missing_reporter_id}")
     print(f"[INFO] Issues after exclusion: {len(filtered)}")
     return filtered
 
