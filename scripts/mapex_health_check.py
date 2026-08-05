@@ -72,7 +72,20 @@ def jira_auth() -> HTTPBasicAuth:
 
 def confluence_auth() -> HTTPBasicAuth:
     return HTTPBasicAuth(CONFLUENCE_EMAIL, CONFLUENCE_API_TOKEN)
-
+    
+def jira_get(path: str, params: dict | None = None) -> dict:
+    url = f"{JIRA_BASE_URL}/rest/api/3{path}"
+    resp = requests.get(
+        url,
+        auth=jira_auth(),
+        params=params,
+        headers={"Accept": "application/json"},
+        timeout=60,
+    )
+    if not resp.ok:
+        print(f"[ERROR] Jira GET {path} -> {resp.status_code}: {resp.text}", file=sys.stderr)
+    resp.raise_for_status()
+    return resp.json()
 
 def parse_date(value: str | None) -> date | None:
     if not value:
@@ -180,7 +193,7 @@ FIELDS = [
 
 def collect_issues(excluded_reporters: set[str]) -> list[dict]:
     since_str = (TODAY_DT - __import__("datetime").timedelta(days=LOOKBACK_DAYS)).strftime("%Y-%m-%d")
-    jql = f'project = "{PROJECT_KEY}" AND created >= "{since_str}" ORDER BY created DESC'
+    jql = f'project = "{PROJECT_KEY}" AND created >= -{LOOKBACK_DAYS}d ORDER BY created DESC'
     print(f"[INFO] JQL: {jql}")
     issues = jira_search(jql, FIELDS, expand=["changelog"])
     print(f"[INFO] Raw issues fetched: {len(issues)}")
