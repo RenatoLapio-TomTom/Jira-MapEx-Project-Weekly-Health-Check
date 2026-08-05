@@ -112,31 +112,41 @@ def jira_get(path: str, params: dict | None = None) -> Any:
     return resp.json()
 
 
-def jira_search(jql: str, fields: list[str], expand: list[str] | None = None) -> list[dict]:
-    """Paginate through all Jira search results."""
-    all_issues: list[dict] = []
+def jira_search(jql, fields, expand=None):
+    issues = []
     start_at = 0
-    page_size = 100
-    params: dict[str, Any] = {
-        "jql": jql,
-        "fields": ",".join(fields),
-        "maxResults": page_size,
-        "startAt": start_at,
-    }
-    if expand:
-        params["expand"] = ",".join(expand)
+    max_results = 100
 
     while True:
-        params["startAt"] = start_at
-        data = jira_get("/search", params=params)
-        issues = data.get("issues", [])
-        all_issues.extend(issues)
+        params = {
+            "jql": jql,
+            "fields": ",".join(fields),
+            "maxResults": max_results,
+            "startAt": start_at,
+        }
+        if expand:
+            params["expand"] = ",".join(expand)
+
+        # New endpoint first (required on newer Jira Cloud tenants)
+        try:
+            data = jira_get("/search/jql", params=params)
+        except requests.HTTPError as e:
+            status = e.response.status_code if e.response is not None else None
+            # Fallback for older tenants still on /search
+            if status in (400, 404, 410):
+                data = jira_get/jql("/search", params=params)
+            else:
+                raise
+
+        batch = data.get("issues", [])
+        issues.extend(batch)
+
         total = data.get("total", 0)
-        start_at += len(issues)
-        print(f"  Fetched {start_at}/{total} issues ...", flush=True)
-        if start_at >= total or not issues:
+        start_at += len(batch)
+        if start_at >= total or not batch:
             break
-    return all_issues
+
+    return issues
 
 
 def fetch_changelog(issue_key: str) -> list[dict]:
