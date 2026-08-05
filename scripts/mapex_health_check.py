@@ -116,45 +116,43 @@ def days_between(a: date, b: date) -> int:
 # Jira API
 # ---------------------------------------------------------------------------
 
+def jira_post(path: str, json_body: dict) -> dict:
+    url = f"{JIRA_BASE_URL}/rest/api/3{path}"
+    resp = requests.post(
+        url,
+        auth=jira_auth(),
+        json=json_body,
+        headers={"Accept": "application/json", "Content-Type": "application/json"},
+        timeout=60,
+    )
+    if not resp.ok:
+        print(f"[ERROR] Jira POST {path} -> {resp.status_code}: {resp.text}", file=sys.stderr)
+    resp.raise_for_status()
+    return resp.json()
+
+
 def jira_search(jql: str, fields: list[str], expand: list[str] | None = None) -> list[dict]:
     issues: list[dict] = []
     start_at = 0
     max_results = 100
 
     while True:
-        params = {
+        body = {
             "jql": jql,
-            "fields": ",".join(fields),
+            "fields": fields,
             "maxResults": max_results,
             "startAt": start_at,
         }
         if expand:
-            params["expand"] = ",".join(expand)
+            body["expand"] = expand
 
-        # New Jira endpoint
-        data = jira_get("/search/jql", params=params)
+        data = jira_post("/search/jql", json_body=body)
 
-        # Debug what Jira actually returns
-        print(f"[DEBUG] response keys: {list(data.keys())}")
-
-        # Compatible extraction (different tenants may use different keys)
         batch = data.get("issues") or data.get("values") or []
-        total = data.get("total", len(batch))
+        total = data.get("total")
+        is_last = data.get("isLast")
 
-        print(f"[DEBUG] jira_search page startAt={start_at} batch={len(batch)} total={total}")
-
-        # If first page is empty, try fallback endpoint once
-        if start_at == 0 and len(batch) == 0:
-            try:
-                data2 = jira_get("/search", params=params)
-                batch2 = data2.get("issues") or data2.get("values") or []
-                total2 = data2.get("total", len(batch2))
-                print(f"[DEBUG] fallback /search page startAt={start_at} batch={len(batch2)} total={total2}")
-                if len(batch2) > 0:
-                    batch = batch2
-                    total = total2
-            except Exception as e:
-                print(f"[DEBUG] fallback /search failed: {e}")
+        print(f"[DEBUG] jira_search page startAt={start_at} batch={len(batch)} total={total} isLast={is_last}")
 
         issues.extend(batch)
 
@@ -162,7 +160,9 @@ def jira_search(jql: str, fields: list[str], expand: list[str] | None = None) ->
             break
 
         start_at += len(batch)
-        if start_at >= total:
+        if total is not None and start_at >= total:
+            break
+        if is_last is True:
             break
 
     return issues
