@@ -942,3 +942,5 @@ def main() -> None:
     publish_to_confluence(page_title, report_md)
     print("[MARKER] publish_to_confluence returned successfully", flush=True)
     print("[INFO] Done.", flush=True)
+    if __name__ == "__main__":
+    main()
