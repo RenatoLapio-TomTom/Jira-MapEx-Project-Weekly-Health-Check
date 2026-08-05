@@ -133,36 +133,34 @@ def jira_post(path: str, json_body: dict) -> dict:
 
 def jira_search(jql: str, fields: list[str], expand: list[str] | None = None) -> list[dict]:
     issues: list[dict] = []
-    start_at = 0
+    next_page_token: str | None = None
     max_results = 100
 
     while True:
-        body = {
+        params = {
             "jql": jql,
-            "fields": fields,
+            "fields": ",".join(fields),
             "maxResults": max_results,
-            "startAt": start_at,
         }
         if expand:
-            body["expand"] = expand
+            params["expand"] = ",".join(expand)
+        if next_page_token:
+            params["nextPageToken"] = next_page_token
 
-        data = jira_post("/search/jql", json_body=body)
+        data = jira_get("/search/jql", params=params)
 
         batch = data.get("issues") or data.get("values") or []
-        total = data.get("total")
-        is_last = data.get("isLast")
+        is_last = bool(data.get("isLast", True))
+        next_page_token = data.get("nextPageToken")
 
-        print(f"[DEBUG] jira_search page startAt={start_at} batch={len(batch)} total={total} isLast={is_last}")
+        print(
+            f"[DEBUG] jira_search batch={len(batch)} isLast={is_last} "
+            f"nextPageToken={'yes' if next_page_token else 'no'}"
+        )
 
         issues.extend(batch)
 
-        if not batch:
-            break
-
-        start_at += len(batch)
-        if total is not None and start_at >= total:
-            break
-        if is_last is True:
+        if is_last or not batch:
             break
 
     return issues
