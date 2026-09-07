@@ -874,6 +874,37 @@ def _md_inline(text: str) -> str:
     text = re.sub(r"`(.+?)`", r"<code>\1</code>", text)
     # Links
     text = re.sub(r"\[(.+?)\]\((.+?)\)", r'<a href="\2">\1</a>', text)
+    # MAPEX ticket keys
+    def _mapex_link(match: re.Match[str]) -> str:
+        key = match.group(0)
+        return f'<a href="{JIRA_BASE_URL}/browse/{key}">{key}</a>'
+
+    mapex_pattern = re.compile(r"\bMAPEX-\d+\b")
+    parts = re.split(r"(<[^>]+>)", text)
+    inside_link = False
+    inside_code = False
+    linked_parts: list[str] = []
+
+    for part in parts:
+        if part.startswith("<") and part.endswith(">"):
+            part_lower = part.lower()
+            if part_lower.startswith("<a "):
+                inside_link = True
+            elif part_lower.startswith("</a"):
+                inside_link = False
+            elif part_lower.startswith("<code"):
+                inside_code = True
+            elif part_lower.startswith("</code"):
+                inside_code = False
+            linked_parts.append(part)
+            continue
+
+        if inside_link or inside_code:
+            linked_parts.append(part)
+        else:
+            linked_parts.append(mapex_pattern.sub(_mapex_link, part))
+
+    text = "".join(linked_parts)
     # Emoji pass-through (they're unicode, fine in HTML)
     return text
 
