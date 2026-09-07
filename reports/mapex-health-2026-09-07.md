@@ -7,15 +7,15 @@ _Generated on 2026-09-07 by automated GitHub Actions workflow._
 
 **Overall Health:** 🟡
 
-**Scope:** 1366 tickets analyzed | 2026-06-09 → 2026-09-07 <span style="color:red"><strong>**Remark: only tickets created by Non-Map Experts are considered here*</strong></span>
+**Scope:** 1367 tickets analyzed | 2026-06-09 → 2026-09-07 <span style="color:red"><strong>**Remark: only tickets created by Non-Map Experts are considered here*</strong></span>
 
-**Rejection Rate:** 0 disputed/flagged vs 950 total closed tickets in the last 90 days
+**Rejection Rate:** 0 disputed/flagged vs 949 total closed tickets in the last 90 days
 
 **Schedule Health:**
 
 - 41 overdue (0 critical, 15 high)
 - 2 blocked tickets with due dates
-- 30 due within 14 days, not started
+- 32 due within 14 days, not started
 - 0 stale (no update 30+ days)
 
 **Top 5 Urgent Tickets:**
@@ -96,6 +96,8 @@ Tickets that are overdue, blocked, stale, or at risk of missing their deadline. 
 | MAPEX-11909 | update LEZ ADE query to include emission_regulation = 'no' | In Progress | 2026-09-04 | — | 3 | Daniel Roy | Major | Open Overdue | Medium |
 | MAPEX-11830 | [Bifrost] compare Genesis and Orbis TBT TR errors | Backlog | 2026-09-04 | — | 3 | Erik Follensbee | Critical | Open Overdue | Medium |
 | MAPEX-10024 | COL: Scan existing data to identify sub-address scope and normalization needs | In Progress | 2026-09-04 | — | 3 | Sneha Deshpande | Major | Open Overdue | Medium |
+| MAPEX-12981 | RM Orbis Lane Information FRA Lane divider claryfikcation_Long_dash or area | Backlog | 2026-09-08 | — | n/a | Carole Vallee | Major | Due Soon – Not Started | Medium |
+| MAPEX-12980 | Need to support for OM-375943 (Q3 Street Name Centerline Maintenance - MAC Source Prep) | Backlog | 2026-09-08 | — | n/a | HC Yen | Critical | Due Soon – Not Started | Medium |
 | MAPEX-12968 | Need Support for RNR on E Highway. Colorado - USA | Backlog | 2026-09-08 | — | n/a | Brandy Boyle | Major | Due Soon – Not Started | Medium |
 | MAPEX-12967 | Need to support for IM-74963 ([CS0013883] [RATP Smart Systems] - Service road with incorrects tags.) | Planned | 2026-09-09 | — | n/a | Laurent Di Marzo | Critical | Due Soon – Not Started | Medium |
 | MAPEX-12964 | Required Confirmation for APT deletion - ZAF | Backlog | 2026-09-10 | — | n/a | Daniel Jooste | Major | Due Soon – Not Started | Medium |
