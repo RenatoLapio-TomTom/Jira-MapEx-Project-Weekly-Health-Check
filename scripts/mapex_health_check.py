@@ -232,14 +232,19 @@ def collect_issues(excluded_reporter_ids: set[str]) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 REJECTION_KEYWORDS = re.compile(
-    r"\breject(ed|ion)?\b|\bnot acceptable\b|\bincorrect\b|\bwrong\b"
+    r"\breject(ed|ion)?\b|\bnot acceptable\b|\bincorrect\b"
     r"|\bredo\b|\brework\b|\breopen\b|\bunsatisfied\b|\bdoes not meet\b",
     re.IGNORECASE,
 )
 
 FALSE_POSITIVE_CONTEXTS = re.compile(
     r"\bno(t)? wrong\b|\bcorrect(ly)?\b|\bwas correct\b|\blooks good\b"
-    r"|\bseems (fine|ok|correct)\b|\breview (is )?(complete|done|approved)\b",
+    r"|\bseems (fine|ok|correct)\b|\breview (is )?(complete|done|approved)\b"
+    r"|\bthank you\b|\bthanks\b|\bappreciat(ed|ion)\b"
+    r"|\bplease go ahead and close\b|\bno further questions\b"
+    r"|\bwas wrong\s*[—-]\s*but\b|\bwas wrong[\s\S]*\bhowever\b"
+    r"|\A(?=[\s\S]*\b(?:thank you|thanks|appreciat(?:ed|ion)|much appreciated|great work|well done|excellent)\b)"
+    r"(?=[\s\S]*\b(?:reject(?:ed|ion)?|not acceptable|incorrect|redo|rework|reopen|unsatisfied|does not meet)\b)",
     re.IGNORECASE,
 )
 
@@ -419,7 +424,7 @@ def compute_risk_level(days_overdue: int | None, prio: str, risk_cat: str) -> st
 # Section builders
 # ---------------------------------------------------------------------------
 
-def build_disputed_section(issues: list[dict], history: set[str]) -> tuple[str, list[str]]:
+def build_disputed_section(issues: list[dict], history: set[str]) -> tuple[str, list[str], list[dict]]:
     rows: list[dict] = []
     new_keys: list[str] = []
 
@@ -465,7 +470,7 @@ def build_disputed_section(issues: list[dict], history: set[str]) -> tuple[str, 
                 f"| {r['reporter']} | {r['assignee']} | {r['signal']} | {r['evidence']} | {r['severity']} |"
             )
         lines.append("")
-    return "\n".join(lines), new_keys
+    return "\n".join(lines), new_keys, rows
 
 
 def build_at_risk_section(issues: list[dict]) -> tuple[str, list[dict]]:
@@ -575,17 +580,48 @@ def build_at_risk_section(issues: list[dict]) -> tuple[str, list[dict]]:
     return "\n".join(lines), rows
 
 
-def build_followup_section(at_risk_rows: list[dict], disputed_rows_text: str) -> str:
-    EXCLUDED_CATS = {"Due Soon – Not Started", "Closed Late"}
-    rows = [r for r in at_risk_rows if r["risk_cat"] not in EXCLUDED_CATS]
+def build_followup_section(at_risk_rows: list[dict], disputed_rows: list[dict]) -> str:
+    HIGH_RISK = {"High", "Critical"}
+    late_rows = [r for r in at_risk_rows if r["risk_cat"] == "Open Overdue" and r["risk_lvl"] in HIGH_RISK]
+    rows_by_key: dict[str, dict] = {}
+
+    for r in late_rows:
+        rows_by_key[r["key"]] = {
+            "key": r["key"],
+            "assignee": r["assignee"],
+            "reasons": [f"{r['risk_cat']} — {r['risk_lvl']} risk"],
+        }
+
+    for r in disputed_rows:
+        key = r["key"]
+        reason = f"Rejected/Disputed — {r['severity']} severity"
+        if key in rows_by_key:
+            rows_by_key[key]["reasons"].append(reason)
+            if rows_by_key[key]["assignee"] == "—" and r.get("assignee"):
+                rows_by_key[key]["assignee"] = r["assignee"]
+        else:
+            rows_by_key[key] = {
+                "key": key,
+                "assignee": r.get("assignee") or "—",
+                "reasons": [reason],
+            }
+
+    rows = sorted(rows_by_key.values(), key=lambda row: row["key"])
 
     lines: list[str] = []
     lines.append("## 4. Follow-up\n")
     lines.append(
-        "The table below lists all flagged tickets (excluding _Due Soon – Not Started_ and _Closed Late_ "
-        "categories) that require follow-up action. Assignees are asked to review their tickets, "
+        "The table below lists all tickets that require follow-up: _Open Overdue_ tickets with "
+        "_High/Critical_ risk and _Rejected/Disputed_ tickets. "
+        "Assignees are asked to review their tickets, "
         "provide a status update in the **Follow-up Status** column, and propose a recommendation "
         "in the **User Recommendation** column.\n"
+    )
+    lines.append(
+        "For tickets that meet multiple criteria, all reasons are combined in the same row.\n"
+    )
+    lines.append(
+        "_Due Soon – Not Started_, _Closed Late_, and non-high-risk late tickets are excluded from this section.\n"
     )
     lines.append(
         "**Why follow-up matters:** Timely follow-up on flagged tickets prevents recurring issues, "
@@ -599,7 +635,7 @@ def build_followup_section(at_risk_rows: list[dict], disputed_rows_text: str) ->
         lines.append("| Key | Assignee | Follow-up Status | Reason for Flagging | User Recommendation |")
         lines.append("|-----|----------|-----------------|---------------------|---------------------|")
         for r in rows:
-            reason = f"{r['risk_cat']} — {r['risk_lvl']} risk"
+            reason = "; ".join(r["reasons"])
             lines.append(f"| {r['key']} | {r['assignee']} | _(to be filled)_ | {reason} | _(to be filled)_ |")
         lines.append("")
     return "\n".join(lines)
@@ -714,17 +750,7 @@ def build_executive_summary(
 
 def build_report(issues: list[dict], history: set[str], report_date: date) -> tuple[str, list[str]]:
     print("[INFO] Building disputed section ...")
-    disputed_text, new_disputed_keys = build_disputed_section(issues, history)
-
-    # Re-parse rows for exec summary usage
-    disputed_rows = []
-    for issue in issues:
-        key = issue_key(issue)
-        if key in history:
-            continue
-        signals, _ = detect_disputed_signals(issue)
-        if signals:
-            disputed_rows.append({"key": key})
+    disputed_text, new_disputed_keys, disputed_rows = build_disputed_section(issues, history)
 
     print("[INFO] Building at-risk section ...")
     at_risk_text, at_risk_rows = build_at_risk_section(issues)
@@ -733,7 +759,7 @@ def build_report(issues: list[dict], history: set[str], report_date: date) -> tu
     exec_summary = build_executive_summary(issues, disputed_rows, at_risk_rows, report_date)
 
     print("[INFO] Building follow-up section ...")
-    followup_text = build_followup_section(at_risk_rows, disputed_text)
+    followup_text = build_followup_section(at_risk_rows, disputed_rows)
 
     title = f"Jira MapEx Project Health Check Report - {report_date}"
     header = f"# {title}\n\n_Generated on {report_date} by automated GitHub Actions workflow._\n"
