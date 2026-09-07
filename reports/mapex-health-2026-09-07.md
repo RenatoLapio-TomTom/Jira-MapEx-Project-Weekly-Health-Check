@@ -9,7 +9,7 @@ _Generated on 2026-09-07 by automated GitHub Actions workflow._
 
 **Scope:** 1366 tickets analyzed | 2026-06-09 → 2026-09-07 <span style="color:red"><strong>**Remark: only tickets created by Non-Map Experts are considered here*</strong></span>
 
-**Rejection Rate:** 0 disputed/flagged vs 950 total closed tickets in the last 90 days
+**Rejection Rate:** 1 disputed/flagged vs 950 total closed tickets in the last 90 days
 
 **Schedule Health:**
 
@@ -46,7 +46,9 @@ _Generated on 2026-09-07 by automated GitHub Actions workflow._
 
 Tickets where work was potentially rejected or challenged, identified through resolution status, reopening history, comment keywords, or reporter post-closure activity.
 
-_No new disputed tickets detected in this reporting period._
+| Key | Summary | Status | Resolution | Reporter | Assignee | Signal | Evidence | Severity |
+|-----|---------|--------|------------|----------|----------|--------|----------|----------|
+| MAPEX-12775 | RM Orbis Lane Information FRA Lane divider claryfikcation_small pices of stone | Closed | Done | Beata Kacprzak | Carole Vallee | Reporter commented after closure | Reporter comment after resolution: "Hi   , in ADI, please specify the intended use of this area and, where relevant, what type of divider should be used for…" | Low |
 
 
 ## 3. At-Risk / Late Tickets
