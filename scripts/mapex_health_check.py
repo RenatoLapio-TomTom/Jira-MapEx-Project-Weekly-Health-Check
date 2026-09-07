@@ -337,7 +337,8 @@ def detect_disputed_signals(issue: dict) -> tuple[list[str], list[str]]:
         signals.append("Reopened after closure")
         evidence.append("Status WAS Closed, now reopened")
 
-    # Signal 3: keywords in comments
+    # Signal 3: keywords in comments from external (non-MapEx) users
+    mapex_team_ids = load_excluded_reporters()
     comments = get_field(issue, "comment", "comments") or []
     for c in comments:
         body = c.get("body", "")
@@ -346,6 +347,8 @@ def detect_disputed_signals(issue: dict) -> tuple[list[str], list[str]]:
             body = _extract_adf_text(body)
         if REJECTION_KEYWORDS.search(body) and not FALSE_POSITIVE_CONTEXTS.search(body):
             author_id = (c.get("author") or {}).get("accountId", "")
+            if author_id in mapex_team_ids:
+                continue
             author_name = (c.get("author") or {}).get("displayName", author_id)
             snippet = body[:120].replace("\n", " ").strip()
             signals.append("Dissatisfaction keyword in comment")
