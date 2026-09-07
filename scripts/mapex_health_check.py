@@ -43,6 +43,7 @@ LOOKBACK_DAYS = int(os.environ.get("LOOKBACK_DAYS", "90"))
 
 TODAY = date.today()
 TODAY_DT = datetime.combine(TODAY, datetime.min.time(), tzinfo=timezone.utc)
+MAPEX_TICKET_KEY_PATTERN = re.compile(r"(?<![\w/\[])\b(MAPEX-\d+)\b(?!\]\()")
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -111,6 +112,14 @@ def parse_datetime(value: str | None) -> datetime | None:
 
 def days_between(a: date, b: date) -> int:
     return (a - b).days
+
+
+def linkify_mapex_ticket_keys(markdown: str) -> str:
+    """Convert plain MAPEX ticket keys to Jira markdown links."""
+    return MAPEX_TICKET_KEY_PATTERN.sub(
+        lambda m: f"[{m.group(1)}]({JIRA_BASE_URL}/browse/{m.group(1)})",
+        markdown,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -738,6 +747,7 @@ def build_report(issues: list[dict], history: set[str], report_date: date) -> tu
     title = f"Jira MapEx Project Health Check Report - {report_date}"
     header = f"# {title}\n\n_Generated on {report_date} by automated GitHub Actions workflow._\n"
     report = "\n\n".join([header, exec_summary, disputed_text, at_risk_text, followup_text])
+    report = linkify_mapex_ticket_keys(report)
     return report, new_disputed_keys
 
 
