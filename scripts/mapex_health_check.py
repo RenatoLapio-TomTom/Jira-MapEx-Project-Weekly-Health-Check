@@ -232,14 +232,19 @@ def collect_issues(excluded_reporter_ids: set[str]) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 REJECTION_KEYWORDS = re.compile(
-    r"\breject(ed|ion)?\b|\bnot acceptable\b|\bincorrect\b|\bwrong\b"
+    r"\breject(ed|ion)?\b|\bnot acceptable\b|\bincorrect\b"
     r"|\bredo\b|\brework\b|\breopen\b|\bunsatisfied\b|\bdoes not meet\b",
     re.IGNORECASE,
 )
 
 FALSE_POSITIVE_CONTEXTS = re.compile(
     r"\bno(t)? wrong\b|\bcorrect(ly)?\b|\bwas correct\b|\blooks good\b"
-    r"|\bseems (fine|ok|correct)\b|\breview (is )?(complete|done|approved)\b",
+    r"|\bseems (fine|ok|correct)\b|\breview (is )?(complete|done|approved)\b"
+    r"|\bthank you\b|\bthanks\b|\bappreciat(ed|ion)\b"
+    r"|\bplease go ahead and close\b|\bno further questions\b"
+    r"|\bwas wrong\s*[—-]\s*but\b|\bwas wrong[\s\S]*\bhowever\b"
+    r"|\A(?=[\s\S]*\b(?:thank you|thanks|appreciat(?:ed|ion)|much appreciated|great work|well done|excellent)\b)"
+    r"(?=[\s\S]*\b(?:reject(?:ed|ion)?|not acceptable|incorrect|redo|rework|reopen|unsatisfied|does not meet)\b)",
     re.IGNORECASE,
 )
 
