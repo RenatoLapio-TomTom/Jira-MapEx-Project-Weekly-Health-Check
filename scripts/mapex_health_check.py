@@ -11,10 +11,12 @@ import json
 import os
 import re
 import sys
+import html
 from collections import Counter, defaultdict
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote, urlsplit, urlunsplit
 
 import requests
 from dateutil import parser as dateutil_parser
@@ -750,8 +752,6 @@ def markdown_to_confluence_storage(md: str) -> str:
     Convert markdown to a Confluence storage-format HTML representation.
     This is a best-effort conversion; complex markdown may require further tuning.
     """
-    import html as html_lib
-
     lines = md.splitlines()
     output: list[str] = []
     in_table = False
@@ -863,7 +863,35 @@ def markdown_to_confluence_storage(md: str) -> str:
 
 def _md_inline(text: str) -> str:
     """Convert inline markdown (bold, italic, code, links) to HTML."""
-    # Pass through raw HTML spans unchanged
+    def _encode_href(url: str) -> str:
+        parsed = urlsplit(url.strip())
+        if not parsed.scheme or not parsed.netloc:
+            return html.escape(url.strip(), quote=True)
+        encoded = urlunsplit(
+            (
+                parsed.scheme,
+                parsed.netloc,
+                quote(parsed.path, safe="/-._~!$&'()*+,;=:@%"),
+                quote(parsed.query, safe="=&%-._~!$'()*+,;:@/?"),
+                quote(parsed.fragment, safe="%-._~!$&'()*+,;=:@/?"),
+            )
+        )
+        return html.escape(encoded, quote=True)
+
+    def _jira_link_for_key(key: str) -> str:
+        issue_key = key.upper()
+        href = _encode_href(f"{JIRA_BASE_URL}/browse/{issue_key}")
+        return f'<a href="{href}">{issue_key}</a>'
+
+    placeholders: dict[str, str] = {}
+
+    def _store_markdown_link(match: re.Match[str]) -> str:
+        token = f"__MD_LINK_{len(placeholders)}__"
+        label = match.group(1)
+        href = _encode_href(match.group(2))
+        placeholders[token] = f'<a href="{href}">{label}</a>'
+        return token
+
     # Bold+italic
     text = re.sub(r"\*\*\*(.+?)\*\*\*", r"<strong><em>\1</em></strong>", text)
     # Bold
@@ -872,8 +900,13 @@ def _md_inline(text: str) -> str:
     text = re.sub(r"\*(.+?)\*", r"<em>\1</em>", text)
     # Inline code
     text = re.sub(r"`(.+?)`", r"<code>\1</code>", text)
-    # Links
-    text = re.sub(r"\[(.+?)\]\((.+?)\)", r'<a href="\2">\1</a>', text)
+    # Preserve markdown links before plain key linkification
+    text = re.sub(r"\[(.+?)\]\((.+?)\)", _store_markdown_link, text)
+    # Plain MAPEX keys -> Jira links
+    text = re.sub(r"\bMAPEX-\d+\b", lambda m: _jira_link_for_key(m.group(0)), text, flags=re.IGNORECASE)
+    # Restore markdown links
+    for token, rendered_link in placeholders.items():
+        text = text.replace(token, rendered_link)
     # Emoji pass-through (they're unicode, fine in HTML)
     return text
 
