@@ -7,15 +7,15 @@ _Generated on 2026-10-13 by automated GitHub Actions workflow._
 
 **Overall Health:** 🔴
 
-**Scope:** 1544 tickets analyzed | 2026-07-15 → 2026-10-13 <span style="color:red"><strong>**Remark: only tickets created by Non-Map Experts are considered here*</strong></span>
+**Scope:** 1545 tickets analyzed | 2026-07-15 → 2026-10-13 <span style="color:red"><strong>**Remark: only tickets created by Non-Map Experts are considered here*</strong></span>
 
-**Potential Disputes (automated flags):** 2 disputed/flagged candidate(s) vs 1101 total closed tickets in the last 90 days _(automated rule-based candidates awaiting human validation, not confirmed rejections; manual Confluence edits do not alter automated summary counts or RAG health, and do not feed back into future detection)_
+**Potential Disputes (automated flags):** 0 disputed/flagged candidate(s) vs 1101 total closed tickets in the last 90 days _(automated rule-based candidates awaiting human validation, not confirmed rejections; manual Confluence edits do not alter automated summary counts or RAG health, and do not feed back into future detection)_
 
 **Schedule Health:**
 
-- 38 overdue (1 critical, 5 high)
+- 35 overdue (1 critical, 5 high)
 - 5 blocked tickets with due dates
-- 29 due within 14 days, not started
+- 31 due within 14 days, not started
 - 16 stale (no update 30+ days)
 
 **Top 5 Urgent Tickets:**
@@ -29,13 +29,14 @@ _Generated on 2026-10-13 by automated GitHub Actions workflow._
 **Assignee Overload (3+ flagged tickets):**
 
 - Angelique Corion: 14 flagged tickets
-- Nikki Royce: 11 flagged tickets
+- Nikki Royce: 10 flagged tickets
 - Ted Yates: 7 flagged tickets
-- Kalyan Dhaytonde: 7 flagged tickets
-- Brandy Boyle: 7 flagged tickets
-- Matthew Rinaldi: 4 flagged tickets
+- Matthew Rinaldi: 6 flagged tickets
+- Kalyan Dhaytonde: 6 flagged tickets
 - Natasha Klinghardt: 4 flagged tickets
 - Daniel Roy: 3 flagged tickets
+- Kate Meyer: 3 flagged tickets
+- Brandy Boyle: 3 flagged tickets
 
 **Recommendations:**
 
@@ -46,7 +47,12 @@ _Generated on 2026-10-13 by automated GitHub Actions workflow._
 
 ## 2. Rejected / Disputed Tickets
 
-Tickets listed below are automated rule-based candidates requiring human validation — they are not AI verdicts or confirmed rejections. Detection flags tickets based on objective rules: Incomplete resolution, reopening history, dissatisfaction keywords in comments, or any non-excluded comment posted by the reporter after closure when resolution is Done. Because the post-closure rule flags any reporter activity after resolution regardless of sentiment, informational, administrative, or polite follow-up comments can be false positives.
+Tickets listed below are automated rule-based candidates requiring human validation — they are not AI verdicts or confirmed rejections. Detection flags tickets based on objective rules: current resolution Rejected, Incomplete resolution, reopening history, dissatisfaction keywords in comments, or any non-excluded comment posted by the reporter after closure when resolution is Done. Because the post-closure rule flags any reporter activity after resolution regardless of sentiment, informational, administrative, or polite follow-up comments can be false positives.
+
+**Classification legend (report-only tags, not Jira or Confluence labels):**
+- **[REJECTED]** — the ticket's current Jira resolution is recorded as Rejected. This reflects a resolution value set in Jira, not a completed human validation of the dispute.
+- **[POTENTIAL DISPUTE]** — flagged only by other automated signals (Incomplete resolution, reopening, dissatisfaction keywords, or reporter post-closure comment); requires human validation.
+- When a Rejected-resolution ticket also matches other signals, **[REJECTED]** takes precedence and the single row keeps all evidence.
 
 **Manual Review Instructions (Confluence Editor):**
 The validation columns below are plain editable table cells (not interactive dropdowns). A team member with Confluence page edit permissions should edit this page to record manual reviews:
@@ -54,10 +60,7 @@ The validation columns below are plain editable table cells (not interactive dro
 - In **Validation Notes**, record the reason/evidence supporting the decision, reviewer name, and review date (e.g., `False positive: informational DB update note | J. Doe, 2026-10-14`).
 - _Note:_ Manual edits in Confluence are for team visibility and auditability only; they do not update automated executive-summary counts or RAG status, and do not feed back into future automated detection runs.
 
-| Key | Summary | Status | Resolution | Reporter | Assignee | Signal | Evidence | Severity | Manual Validation | Validation Notes |
-|-----|---------|--------|------------|----------|----------|--------|----------|----------|-------------------|------------------|
-| MAPEX-11540 | Geopol Orbis 2026.Q4 ARG - Kit Review | Closed | Done | Meera Palange | Pablo Schweitzer | Reporter commented after closure | Reporter comment after resolution: "Hi    Pending Orbis DB updates will be done through  . Kind regards, Meera…" | Low | Pending review | _(to be filled: reason, reviewer, date)_ |
-| MAPEX-11539 | Geopol Genesis 2026.12.000 ARG - Kit Review | Closed | Done | Meera Palange | Pablo Schweitzer | Reporter commented after closure | Reporter comment after resolution: "Hi  Pending Genesis DB updates will be done through  .   Kind regards, Meera…" | Low | Pending review | _(to be filled: reason, reviewer, date)_ |
+_No new disputed tickets detected in this reporting period._
 
 
 ## 3. At-Risk / Late Tickets
@@ -82,7 +85,6 @@ Tickets that are overdue, blocked, stale, or at risk of missing their deadline. 
 | MAPEX-12590 | refine / evaluate LEZ gap leads proposed by VS | Backlog | 2026-09-30 | — | 13 | Daniel Roy | Major | Open Overdue | Medium |
 | MAPEX-11401 | Orbis Postal _Source Validation Queries | In Progress | 2026-09-30 | — | 13 | Nikki Royce | Major | Open Overdue | Medium |
 | MAPEX-11399 | Orbis Areas_Source Validation Queries | In Progress | 2026-09-30 | — | 13 | Nikki Royce | Major | Open Overdue | Medium |
-| MAPEX-10952 | Scope and Solving methods for duplicate Index Level 8 & 9 features | In Progress | 2026-09-30 | — | 13 | Nikki Royce | Major | Open Overdue | Medium |
 | MAPEX-12842 | Taxi Restriction evaluation Genesis vs Orbis | Backlog | 2026-10-01 | — | 12 | Kalyan Dhaytonde | Major | Open Overdue | Medium |
 | MAPEX-12362 | scope navigability=prohibited at aerodromes | Backlog | 2026-10-01 | — | 12 | Kalyan Dhaytonde | Major | Open Overdue | Medium |
 | MAPEX-11789 | support new CC rules for new CA length spec | Backlog | 2026-10-01 | — | 12 | Kalyan Dhaytonde | Major | Open Overdue | Medium |
@@ -97,13 +99,15 @@ Tickets that are overdue, blocked, stale, or at risk of missing their deadline. 
 | MAPEX-12899 | Barrier / non-passable analysis for NDS | In Progress | 2026-10-09 | — | 4 | Daniel Roy | Major | Open Overdue | Medium |
 | MAPEX-12348 | USA ProMiles source knowledge transfer from Local Expert to ADP | In Progress | 2026-10-09 | — | 4 | Matthew Rinaldi | Critical | Open Overdue | Medium |
 | MAPEX-12168 | Need support on IM-73878 (Need update "residents only" restriction on bunch of road geometry (country SVN)) | In Progress | 2026-10-09 | — | 4 | Szabolcs Szász | Critical | Open Overdue | Medium |
-| MAPEX-14302 | Lane restriction – NSC rideshare lane in effect 8:30 PM to 10:45 PM | Backlog | 2026-10-10 | — | 3 | Brandy Boyle | Major | Open Overdue | Medium |
+| MAPEX-14302 | Lane restriction – NSC rideshare lane in effect 8:30 PM to 10:45 PM | Open | 2026-10-10 | — | 3 | Matthew Rinaldi | Major | Open Overdue | Medium |
 | MAPEX-13454 | Create Map Ops work instructions for landmark integration in Orbis | In Progress | 2026-10-10 | — | 3 | Pawel Majewski | Critical | Open Overdue | Medium |
 | MAPEX-14309 | Need support on IM-76230 ([Genesis][Italy] Fragmented environmental zone source data causing inconsistent LEZ attribution on routing links) | Backlog | 2026-10-12 | — | 1 | Diego Carreira Fernández | Critical | Open Overdue | Medium |
-| MAPEX-14308 | NSC Rideshare lane. Will be in effect 8:30pm to 10:45pm | Backlog | 2026-10-12 | — | 1 | Brandy Boyle | Major | Open Overdue | Medium |
+| MAPEX-14308 | NSC Rideshare lane. Will be in effect 8:30pm to 10:45pm | Open | 2026-10-12 | — | 1 | Matthew Rinaldi | Major | Open Overdue | Medium |
 | MAPEX-14252 | IM-76046 ([Korea][WK2638][ANA] Gonjiam Station Exit 2– Reality to validate POI and EP location | Backlog | 2026-10-12 | — | 1 | Sunny Ji | Major | Open Overdue | Medium |
-| MAPEX-14002 | Need latest source for CAN city center/name changes | In Progress | 2026-10-12 | — | 1 | Andy Palmer | Major | Open Overdue | Medium |
-| MAPEX-13370 | please detect invalid short CA stretches on highway=primary | In Progress | 2026-10-12 | — | 1 | Kalyan Dhaytonde | Major | Open Overdue | Medium |
+| MAPEX-14450 | Review Challenge Before Indonesia Community Announcement | Backlog | 2026-10-16 | — | n/a | Happy Siagian | Major | Due Soon – Not Started | Medium |
+| MAPEX-14448 | Need support on IM-77270 (Motorcycle Restriction Quality – review of existing restrictions in Uber priority countries (DEU, GBR, NLD, USA)) | Backlog | 2026-10-14 | — | n/a | Brunhilde Schulz | Critical | Due Soon – Not Started | Medium |
+| MAPEX-14443 | Need support on IM-77270 (Motorcycle Restriction Quality – review of existing restrictions in Uber priority countries (DEU, GBR, NLD, USA)) | Backlog | 2026-10-14 | — | n/a | Thomas Kenny | Critical | Due Soon – Not Started | Medium |
+| MAPEX-14441 | Need support on IM-77270 (Motorcycle Restriction Quality – review of existing restrictions in Uber priority countries (DEU, GBR, NLD, USA)) | Backlog | 2026-10-14 | — | n/a | John Taylor-Robinson | Critical | Due Soon – Not Started | Medium |
 | MAPEX-14437 | IM-76046 - Need to check reality and provide confirmation for relocate RP | Backlog | 2026-10-16 | — | n/a | Seunghee Cho | Major | Due Soon – Not Started | Medium |
 | MAPEX-14436 | Start end location for DC creation | Backlog | 2026-10-15 | — | n/a | Natasha Klinghardt | Major | Due Soon – Not Started | Medium |
 | MAPEX-14434 | Source required for POI updated | Backlog | 2026-10-15 | — | n/a | Natasha Klinghardt | Major | Due Soon – Not Started | Medium |
@@ -113,17 +117,15 @@ Tickets that are overdue, blocked, stale, or at risk of missing their deadline. 
 | MAPEX-14428 | Need source to update city center place name. | Backlog | 2026-10-16 | — | n/a | Brandy Boyle | Major | Due Soon – Not Started | Medium |
 | MAPEX-14426 | Please provide a valid source to update the City Center location. | Backlog | 2026-10-15 | — | n/a | Brandy Boyle | Major | Due Soon – Not Started | Medium |
 | MAPEX-14415 | Required source for update Street name | Open | 2026-10-16 | — | n/a | Natasha Klinghardt | Major | Due Soon – Not Started | Medium |
-| MAPEX-14413 | Required source for update RNR | Backlog | 2026-10-16 | — | n/a | Brandy Boyle | Major | Due Soon – Not Started | Medium |
+| MAPEX-14413 | Required source for update RNR | Open | 2026-10-16 | — | n/a | Kate Meyer | Major | Due Soon – Not Started | Medium |
 | MAPEX-14406 | [3D Map] Review LM basemap sample areas for visualization errors and identify root cause | Planned | 2026-10-23 | — | n/a | Martyna Dziedzinska | Major | Due Soon – Not Started | Medium |
 | MAPEX-14405 | Need support on IM-77040 (Bicycle restriction on "Part of Freeway) | Backlog | 2026-10-14 | — | n/a | Thomas Kenny | Critical | Due Soon – Not Started | Medium |
-| MAPEX-14349 | Need to support in IM-76401(Incorrect Postal Code on Address Point (PRT)) | Planned | 2026-10-14 | — | n/a | Massimo Vallainc | Critical | Due Soon – Not Started | Medium |
-| MAPEX-14345 | Restriction changes at Michigan,USA | Backlog | 2026-10-13 | — | n/a | Brandy Boyle | Major | Due Soon – Not Started | Medium |
+| MAPEX-14345 | Restriction changes at Michigan,USA | Open | 2026-10-13 | — | n/a | Kate Meyer | Major | Due Soon – Not Started | Medium |
 | MAPEX-14311 | POI IM-76768 KOR - Request to confirm the Official Name of POI | Backlog | 2026-10-13 | — | n/a | Sunny Ji | Major | Due Soon – Not Started | Medium |
 | MAPEX-14160 | KOR- Rest Area Capture Difficulties Due to Outdated Imagery and Vertex Source | Open | 2026-10-22 | — | n/a | Sooyeon Ahn | Major | Due Soon – Not Started | Medium |
 | MAPEX-14087 | [LMW] GBL Brunnels — USA: #3457 Eisenhower-Johnson Memorial Tunnel East/West (Directions) | Open | 2026-10-20 | — | n/a | Ted Yates | Major | Due Soon – Not Started | Medium |
 | MAPEX-14085 | [LMW] GBL Brunnels — USA: #2942 Eisenhower-Johnson Memorial Tunnel West/East (Directions) | Open | 2026-10-20 | — | n/a | Ted Yates | Major | Due Soon – Not Started | Medium |
 | MAPEX-14082 | [LMW] GBL Brunnels — USA: #3451 Lincoln Tunnel East/West (Directions) | Open | 2026-10-20 | — | n/a | Ted Yates | Major | Due Soon – Not Started | Medium |
-| MAPEX-14109 | GBR: Truck routing restrictions in London | Open | 2026-10-18 | — | n/a | John Taylor-Robinson | Major | Due Soon – Not Started | Medium |
 | MAPEX-13907 | TTI - Perform a test of the enhanced RoadLens version - SWE | Backlog | 2026-10-19 | — | n/a | Gennaro Pesce | Major | Due Soon – Not Started | Medium |
 | MAPEX-13412 | KOR- APT Related Questions and Clarification | Planned | 2026-10-16 | — | n/a | Seunghee Cho | Major | Due Soon – Not Started | Medium |
 | MAPEX-13081 | Create Georgia DOT Source for Truck Weight Restrictions | Planned | 2026-10-16 | — | n/a | Matthew Rinaldi | Major | Due Soon – Not Started | Medium |
@@ -175,7 +177,6 @@ The table below lists all flagged tickets (excluding _Due Soon – Not Started_ 
 | MAPEX-12590 | Daniel Roy | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
 | MAPEX-11401 | Nikki Royce | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
 | MAPEX-11399 | Nikki Royce | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
-| MAPEX-10952 | Nikki Royce | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
 | MAPEX-12842 | Kalyan Dhaytonde | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
 | MAPEX-12362 | Kalyan Dhaytonde | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
 | MAPEX-11789 | Kalyan Dhaytonde | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
@@ -190,13 +191,11 @@ The table below lists all flagged tickets (excluding _Due Soon – Not Started_ 
 | MAPEX-12899 | Daniel Roy | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
 | MAPEX-12348 | Matthew Rinaldi | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
 | MAPEX-12168 | Szabolcs Szász | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
-| MAPEX-14302 | Brandy Boyle | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
+| MAPEX-14302 | Matthew Rinaldi | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
 | MAPEX-13454 | Pawel Majewski | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
 | MAPEX-14309 | Diego Carreira Fernández | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
-| MAPEX-14308 | Brandy Boyle | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
+| MAPEX-14308 | Matthew Rinaldi | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
 | MAPEX-14252 | Sunny Ji | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
-| MAPEX-14002 | Andy Palmer | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
-| MAPEX-13370 | Kalyan Dhaytonde | _(to be filled)_ | Open Overdue — Medium risk | _(to be filled)_ |
 | MAPEX-12985 | Angelique Corion | _(to be filled)_ | Stale — Low risk | _(to be filled)_ |
 | MAPEX-12709 | Kalyan Dhaytonde | _(to be filled)_ | Stale — Low risk | _(to be filled)_ |
 | MAPEX-12484 | Daniel Roy | _(to be filled)_ | Stale — Low risk | _(to be filled)_ |
