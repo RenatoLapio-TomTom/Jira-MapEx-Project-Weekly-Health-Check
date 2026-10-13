@@ -8,7 +8,7 @@ Runs every Saturday, generates a Markdown report, and publishes it as a child pa
 ## How it works
 
 1. The GitHub Actions workflow (`.github/workflows/mapex-health-check.yml`) triggers every **Saturday at ~17:00 CET** (16:00 UTC; DST drift of ±1 h is acceptable).
-2. The script (`scripts/mapex_health_check.py`) queries Jira for all MAPEX tickets created in the **last 90 days**, excluding tickets created by the configured list of Map Expert account IDs.
+2. The script (`scripts/mapex_health_check.py`) queries Jira for all MAPEX tickets created in the **last 90 days**, excluding tickets reported by the configured list of Map Expert account IDs.
 3. It produces a Markdown health report with four sections:
    - **Executive Summary** — scope, rejection rate, schedule health, top urgent tickets, overload flags, recommendations, RAG indicator.
    - **Rejected / Disputed Tickets** — tickets detected via rejection signals (incomplete resolution, reopening, dissatisfaction keywords, reporter post-closure comment).
@@ -52,7 +52,7 @@ Add the following secrets under **Settings → Secrets and variables → Actions
   workflows/
     mapex-health-check.yml   # GitHub Actions workflow
 config/
-  excluded_reporters.txt     # Jira accountIds of Map Experts to exclude
+  excluded_reporters.txt     # Jira accountIds excluded as ticket reporters and comment authors
 data/
   disputed_history.json      # Persisted list of previously reported disputed ticket keys
 reports/
@@ -78,3 +78,5 @@ gh workflow run mapex-health-check.yml
 `data/disputed_history.json` contains all ticket keys ever reported in the _Rejected / Disputed Tickets_ section.
 Tickets in this list are suppressed from future reports.
 To reset history (e.g., to force re-reporting), clear the `reported_keys` array in that file and commit.
+
+Account IDs in `config/excluded_reporters.txt` exclude tickets when they are the reporter, and their comments are ignored for comment-based disputed signals (dissatisfaction keywords and reporter post-closure comments). A ticket can still be flagged by an independent signal, such as an Incomplete resolution or reopening, or by qualifying comments from other authors.
