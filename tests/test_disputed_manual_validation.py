@@ -59,6 +59,7 @@ class DisputedManualValidationTests(unittest.TestCase):
             headers,
             [
                 "Key",
+                "Classification",
                 "Summary",
                 "Status",
                 "Resolution",
@@ -78,10 +79,11 @@ class DisputedManualValidationTests(unittest.TestCase):
         ]
         self.assertEqual(len(data_lines), 1)
         row = mapex_health_check._split_table_row(data_lines[0])
-        self.assertEqual(len(row), 11)
+        self.assertEqual(len(row), 12)
         self.assertEqual(row[0], "MAPEX-100")
-        self.assertEqual(row[9], "Pending review")
-        self.assertEqual(row[10], mapex_health_check.DEFAULT_VALIDATION_NOTES)
+        self.assertEqual(row[1], "[POTENTIAL DISPUTE]")
+        self.assertEqual(row[10], "Pending review")
+        self.assertEqual(row[11], mapex_health_check.DEFAULT_VALIDATION_NOTES)
 
     def test_manual_review_guidance_text_in_disputed_section(self):
         issue = self.make_issue(
@@ -188,7 +190,7 @@ class DisputedManualValidationTests(unittest.TestCase):
 
         # Count th in the header
         th_matches = re.findall(r"<th>(.*?)</th>", html)
-        self.assertEqual(len(th_matches), 11)
+        self.assertEqual(len(th_matches), 12)
 
         # Count td in the row
         tr_matches = re.findall(r"<tr>(.*?)</tr>", html, flags=re.DOTALL)
@@ -196,21 +198,22 @@ class DisputedManualValidationTests(unittest.TestCase):
         # Find the row corresponding to MAPEX-PIPE
         pipe_row = next(tr for tr in tr_matches if "MAPEX-PIPE" in tr)
         td_matches = re.findall(r"<td>(.*?)</td>", pipe_row, flags=re.DOTALL)
-        self.assertEqual(len(td_matches), 11)
+        self.assertEqual(len(td_matches), 12)
+        self.assertEqual(td_matches[1], "[POTENTIAL DISPUTE]")
 
         # Ensure literal pipes are preserved inside cells without creating extra columns
-        summary_cell = td_matches[1]
+        summary_cell = td_matches[2]
         self.assertIn("LA,Nevada|USA", summary_cell)
 
-        evidence_cell = td_matches[7]
+        evidence_cell = td_matches[8]
         self.assertIn("Resolution set to Incomplete", evidence_cell)
         self.assertIn("Comment by reporter-1", evidence_cell)
         self.assertIn("wrong | pending updates", evidence_cell)
 
-        validation_cell = td_matches[9]
+        validation_cell = td_matches[10]
         self.assertEqual(validation_cell, "Pending review")
 
-        notes_cell = td_matches[10]
+        notes_cell = td_matches[11]
         self.assertIn("to be filled", notes_cell)
 
     def test_executive_summary_potential_disputes_label_and_notes(self):
