@@ -324,6 +324,11 @@ def was_closed_and_reopened(issue: dict) -> bool:
     return False
 
 
+REJECTED_RESOLUTION_SIGNAL = "Rejected resolution"
+CLASSIFICATION_REJECTED = "[REJECTED]"
+CLASSIFICATION_POTENTIAL_DISPUTE = "[POTENTIAL DISPUTE]"
+
+
 def detect_disputed_signals(
     issue: dict,
     excluded_account_ids: set[str] | None = None,
@@ -337,6 +342,11 @@ def detect_disputed_signals(
     if resolution_name(issue).lower() == "incomplete":
         signals.append("Incomplete resolution")
         evidence.append("Resolution set to Incomplete")
+
+    # Signal 1b: current resolution = Rejected (independent of comments)
+    if resolution_name(issue).lower() == "rejected":
+        signals.append(REJECTED_RESOLUTION_SIGNAL)
+        evidence.append("Resolution set to Rejected")
 
     # Signal 2: was Closed but now open/other
     if was_closed_and_reopened(issue):
@@ -404,7 +414,11 @@ def severity_for_signals(signals: list[str]) -> str:
     if not signals:
         return "Low"
     combined = " ".join(signals).lower()
-    if "incomplete resolution" in combined or "dissatisfaction keyword" in combined:
+    if (
+        "incomplete resolution" in combined
+        or "rejected resolution" in combined
+        or "dissatisfaction keyword" in combined
+    ):
         return "High"
     if "reopened" in combined or "rework" in combined:
         return "Medium"
@@ -429,6 +443,13 @@ def compute_risk_level(days_overdue: int | None, prio: str, risk_cat: str) -> st
 
 DEFAULT_MANUAL_VALIDATION = "Pending review"
 DEFAULT_VALIDATION_NOTES = "_(to be filled: reason, reviewer, date)_"
+
+
+def classification_for_signals(signals: list[str]) -> str:
+    """Return the report-only classification tag for a disputed candidate."""
+    if REJECTED_RESOLUTION_SIGNAL in signals:
+        return CLASSIFICATION_REJECTED
+    return CLASSIFICATION_POTENTIAL_DISPUTE
 
 
 def _escape_table_cell(value: Any) -> str:
@@ -463,13 +484,14 @@ def build_disputed_section(
         sev = severity_for_signals(signals)
         rows.append({
             "key": key,
+            "classification": classification_for_signals(signals),
             "summary": issue_summary(issue),
             "status": status_name(issue),
             "resolution": resolution_name(issue) or "—",
             "reporter": reporter_name(issue),
             "assignee": assignee_name(issue) or "—",
-            "signal": "; ".join(set(signals)),
-            "evidence": " | ".join(evidence[:2]),
+            "signal": "; ".join(dict.fromkeys(signals)),
+            "evidence": " | ".join(evidence),
             "severity": sev,
             "manual_validation": DEFAULT_MANUAL_VALIDATION,
             "validation_notes": DEFAULT_VALIDATION_NOTES,
@@ -484,10 +506,18 @@ def build_disputed_section(
     lines.append(
         "Tickets listed below are automated rule-based candidates requiring human validation "
         "— they are not AI verdicts or confirmed rejections. Detection flags tickets based on "
-        "objective rules: Incomplete resolution, reopening history, dissatisfaction keywords in "
+        "objective rules: current resolution Rejected, Incomplete resolution, reopening history, dissatisfaction keywords in "
         "comments, or any non-excluded comment posted by the reporter after closure when resolution "
         "is Done. Because the post-closure rule flags any reporter activity after resolution regardless "
         "of sentiment, informational, administrative, or polite follow-up comments can be false positives.\n"
+    )
+    lines.append(
+        "**Classification legend (report-only tags, not Jira or Confluence labels):**\n"
+        f"- **{CLASSIFICATION_REJECTED}** — the ticket's current Jira resolution is recorded as Rejected. "
+        "This reflects a resolution value set in Jira, not a completed human validation of the dispute.\n"
+        f"- **{CLASSIFICATION_POTENTIAL_DISPUTE}** — flagged only by other automated signals (Incomplete resolution, "
+        "reopening, dissatisfaction keywords, or reporter post-closure comment); requires human validation.\n"
+        f"- When a Rejected-resolution ticket also matches other signals, **{CLASSIFICATION_REJECTED}** takes precedence and the single row keeps all evidence.\n"
     )
     lines.append(
         "**Manual Review Instructions (Confluence Editor):**\n"
@@ -502,11 +532,12 @@ def build_disputed_section(
     if not rows:
         lines.append("_No new disputed tickets detected in this reporting period._\n")
     else:
-        lines.append("| Key | Summary | Status | Resolution | Reporter | Assignee | Signal | Evidence | Severity | Manual Validation | Validation Notes |")
-        lines.append("|-----|---------|--------|------------|----------|----------|--------|----------|----------|-------------------|------------------|")
+        lines.append("| Key | Classification | Summary | Status | Resolution | Reporter | Assignee | Signal | Evidence | Severity | Manual Validation | Validation Notes |")
+        lines.append("|-----|----------------|---------|--------|------------|----------|----------|--------|----------|----------|-------------------|------------------|")
         for r in rows:
             lines.append(
                 f"| {_escape_table_cell(r['key'])} "
+                f"| {_escape_table_cell(r['classification'])} "
                 f"| {_escape_table_cell(r['summary'])} "
                 f"| {_escape_table_cell(r['status'])} "
                 f"| {_escape_table_cell(r['resolution'])} "

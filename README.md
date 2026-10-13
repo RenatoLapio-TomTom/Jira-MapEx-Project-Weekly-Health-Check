@@ -11,7 +11,7 @@ Runs every Saturday, generates a Markdown report, and publishes it as a child pa
 2. The script (`scripts/mapex_health_check.py`) queries Jira for all MAPEX tickets created in the **last 90 days**, excluding tickets reported by the configured list of Map Expert account IDs.
 3. It produces a Markdown health report with four sections:
    - **Executive Summary** — scope, potential disputes (automated flags), schedule health, top urgent tickets, overload flags, recommendations, RAG indicator.
-   - **Rejected / Disputed Tickets** — automated rule-based candidates requiring human validation (incomplete resolution, reopening, dissatisfaction keywords, reporter post-closure comment). Includes two manual validation columns (**Manual Validation** and **Validation Notes**) for team review in Confluence.
+   - **Rejected / Disputed Tickets** — automated rule-based candidates requiring human validation (current resolution Rejected, incomplete resolution, reopening, dissatisfaction keywords, reporter post-closure comment). Each row has a **Classification** tag (`[REJECTED]` or `[POTENTIAL DISPUTE]`) and two manual validation columns (**Manual Validation** and **Validation Notes**) for team review in Confluence.
    - **At-Risk / Late Tickets** — overdue, blocked, stale, due-soon, or unassigned tickets.
    - **Follow-up** — flagged tickets requiring assignee action.
 4. The report is:
@@ -79,7 +79,7 @@ gh workflow run mapex-health-check.yml
 Tickets in this list are suppressed from future reports.
 To reset history (e.g., to force re-reporting), clear the `reported_keys` array in that file and commit.
 
-Account IDs in `config/excluded_reporters.txt` exclude tickets when they are the reporter, and their comments are ignored for comment-based disputed signals (dissatisfaction keywords and reporter post-closure comments). A ticket can still be flagged by an independent signal, such as an Incomplete resolution or reopening, or by qualifying comments from other authors.
+Account IDs in `config/excluded_reporters.txt` exclude tickets when they are the reporter, and their comments are ignored for comment-based disputed signals (dissatisfaction keywords and reporter post-closure comments). A ticket can still be flagged by an independent signal, such as a Rejected or Incomplete resolution or reopening, or by qualifying comments from other authors.
 
 ---
 
@@ -88,13 +88,29 @@ Account IDs in `config/excluded_reporters.txt` exclude tickets when they are the
 ### Purpose and Candidate Nature
 Tickets appearing in the **Rejected / Disputed Tickets** section are **automated rule-based candidates requiring human review**—they are not AI verdicts or confirmed rejections.
 
-Detection relies on objective rules:
+Detection relies on objective rules (any one signal is enough to flag a ticket):
+- Current resolution set to **Rejected** (signal `Rejected resolution`, evidence `Resolution set to Rejected`, severity **High**) — flagged even with no comments, only neutral comments, or only comments from excluded authors
 - Resolution set to **Incomplete**
 - Ticket status **reopened after closure**
 - Dissatisfaction or rework keywords detected in comments
 - Any non-excluded comment posted by the reporter after closure when resolution is **Done**
 
 Because the post-closure comment rule flags any reporter activity after resolution without analyzing sentiment or context, informational updates, administrative handover notes, or polite follow-up messages may be flagged as candidate disputes and can be false positives.
+
+### Classification tags
+The disputed table includes a **Classification** column with report-only tags (they are not Jira labels or Confluence page labels):
+
+| Tag | Meaning |
+|-----|---------|
+| `[REJECTED]` | The ticket's **current** Jira resolution is recorded as Rejected (case-insensitive, whitespace-trimmed). This is a resolution value recorded in Jira, not a completed human validation. |
+| `[POTENTIAL DISPUTE]` | Flagged solely by the other automated signals above; requires human validation. |
+
+If a Rejected-resolution ticket also matches other signals, `[REJECTED]` takes precedence and the ticket stays a single row that keeps all evidence. Both classifications start as `Pending review` with the default validation notes placeholder.
+
+Scope of the Rejected rule:
+- Only the **current resolution** is checked. A historical resolution transition to Rejected, or a workflow **status** named Rejected, does not by itself trigger this signal.
+- The existing limits still apply unchanged: only tickets created in the last `LOOKBACK_DAYS` (default 90) are analyzed, tickets reported by accounts in `config/excluded_reporters.txt` are excluded, and keys already in `data/disputed_history.json` are not re-reported.
+- Rejected candidates are included in the executive-summary **Potential Disputes (automated flags)** count.
 
 ### Confluence Manual Review Instructions
 Every newly generated disputed ticket row includes two validation columns:
