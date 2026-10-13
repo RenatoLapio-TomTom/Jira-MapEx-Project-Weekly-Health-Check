@@ -7,9 +7,9 @@ _Generated on 2026-10-13 by automated GitHub Actions workflow._
 
 **Overall Health:** 🔴
 
-**Scope:** 1545 tickets analyzed | 2026-07-15 → 2026-10-13 <span style="color:red"><strong>**Remark: only tickets created by Non-Map Experts are considered here*</strong></span>
+**Scope:** 1544 tickets analyzed | 2026-07-15 → 2026-10-13 <span style="color:red"><strong>**Remark: only tickets created by Non-Map Experts are considered here*</strong></span>
 
-**Potential Disputes (automated flags):** 0 disputed/flagged candidate(s) vs 1102 total closed tickets in the last 90 days _(automated rule-based candidates awaiting human validation, not confirmed rejections; manual Confluence edits do not alter automated summary counts or RAG health, and do not feed back into future detection)_
+**Potential Disputes (automated flags):** 2 disputed/flagged candidate(s) vs 1101 total closed tickets in the last 90 days _(automated rule-based candidates awaiting human validation, not confirmed rejections; manual Confluence edits do not alter automated summary counts or RAG health, and do not feed back into future detection)_
 
 **Schedule Health:**
 
@@ -54,7 +54,10 @@ The validation columns below are plain editable table cells (not interactive dro
 - In **Validation Notes**, record the reason/evidence supporting the decision, reviewer name, and review date (e.g., `False positive: informational DB update note | J. Doe, 2026-10-14`).
 - _Note:_ Manual edits in Confluence are for team visibility and auditability only; they do not update automated executive-summary counts or RAG status, and do not feed back into future automated detection runs.
 
-_No new disputed tickets detected in this reporting period._
+| Key | Summary | Status | Resolution | Reporter | Assignee | Signal | Evidence | Severity | Manual Validation | Validation Notes |
+|-----|---------|--------|------------|----------|----------|--------|----------|----------|-------------------|------------------|
+| MAPEX-11540 | Geopol Orbis 2026.Q4 ARG - Kit Review | Closed | Done | Meera Palange | Pablo Schweitzer | Reporter commented after closure | Reporter comment after resolution: "Hi    Pending Orbis DB updates will be done through  . Kind regards, Meera…" | Low | Pending review | _(to be filled: reason, reviewer, date)_ |
+| MAPEX-11539 | Geopol Genesis 2026.12.000 ARG - Kit Review | Closed | Done | Meera Palange | Pablo Schweitzer | Reporter commented after closure | Reporter comment after resolution: "Hi  Pending Genesis DB updates will be done through  .   Kind regards, Meera…" | Low | Pending review | _(to be filled: reason, reviewer, date)_ |
 
 
 ## 3. At-Risk / Late Tickets
