@@ -7,15 +7,15 @@ _Generated on 2026-10-13 by automated GitHub Actions workflow._
 
 **Overall Health:** 🔴
 
-**Scope:** 1547 tickets analyzed | 2026-07-15 → 2026-10-13 <span style="color:red"><strong>**Remark: only tickets created by Non-Map Experts are considered here*</strong></span>
+**Scope:** 1545 tickets analyzed | 2026-07-15 → 2026-10-13 <span style="color:red"><strong>**Remark: only tickets created by Non-Map Experts are considered here*</strong></span>
 
-**Rejection Rate:** 2 disputed/flagged vs 1103 total closed tickets in the last 90 days
+**Potential Disputes (automated flags):** 0 disputed/flagged candidate(s) vs 1102 total closed tickets in the last 90 days _(automated rule-based candidates awaiting human validation, not confirmed rejections; manual Confluence edits do not alter automated summary counts or RAG health, and do not feed back into future detection)_
 
 **Schedule Health:**
 
 - 38 overdue (1 critical, 5 high)
 - 5 blocked tickets with due dates
-- 28 due within 14 days, not started
+- 29 due within 14 days, not started
 - 16 stale (no update 30+ days)
 
 **Top 5 Urgent Tickets:**
@@ -34,8 +34,8 @@ _Generated on 2026-10-13 by automated GitHub Actions workflow._
 - Kalyan Dhaytonde: 7 flagged tickets
 - Brandy Boyle: 7 flagged tickets
 - Matthew Rinaldi: 4 flagged tickets
+- Natasha Klinghardt: 4 flagged tickets
 - Daniel Roy: 3 flagged tickets
-- Natasha Klinghardt: 3 flagged tickets
 
 **Recommendations:**
 
@@ -46,12 +46,15 @@ _Generated on 2026-10-13 by automated GitHub Actions workflow._
 
 ## 2. Rejected / Disputed Tickets
 
-Tickets where work was potentially rejected or challenged, identified through resolution status, reopening history, comment keywords, or reporter post-closure activity.
+Tickets listed below are automated rule-based candidates requiring human validation — they are not AI verdicts or confirmed rejections. Detection flags tickets based on objective rules: Incomplete resolution, reopening history, dissatisfaction keywords in comments, or any non-excluded comment posted by the reporter after closure when resolution is Done. Because the post-closure rule flags any reporter activity after resolution regardless of sentiment, informational, administrative, or polite follow-up comments can be false positives.
 
-| Key | Summary | Status | Resolution | Reporter | Assignee | Signal | Evidence | Severity |
-|-----|---------|--------|------------|----------|----------|--------|----------|----------|
-| MAPEX-11540 | Geopol Orbis 2026.Q4 ARG - Kit Review | Closed | Done | Meera Palange | Pablo Schweitzer | Reporter commented after closure | Reporter comment after resolution: "Hi    Pending Orbis DB updates will be done through  . Kind regards, Meera…" | Low |
-| MAPEX-11539 | Geopol Genesis 2026.12.000 ARG - Kit Review | Closed | Done | Meera Palange | Pablo Schweitzer | Reporter commented after closure | Reporter comment after resolution: "Hi  Pending Genesis DB updates will be done through  .   Kind regards, Meera…" | Low |
+**Manual Review Instructions (Confluence Editor):**
+The validation columns below are plain editable table cells (not interactive dropdowns). A team member with Confluence page edit permissions should edit this page to record manual reviews:
+- Change **Manual Validation** to **Confirmed dispute**, **False positive**, or leave as **Pending review**.
+- In **Validation Notes**, record the reason/evidence supporting the decision, reviewer name, and review date (e.g., `False positive: informational DB update note | J. Doe, 2026-10-14`).
+- _Note:_ Manual edits in Confluence are for team visibility and auditability only; they do not update automated executive-summary counts or RAG status, and do not feed back into future automated detection runs.
+
+_No new disputed tickets detected in this reporting period._
 
 
 ## 3. At-Risk / Late Tickets
@@ -98,6 +101,8 @@ Tickets that are overdue, blocked, stale, or at risk of missing their deadline. 
 | MAPEX-14252 | IM-76046 ([Korea][WK2638][ANA] Gonjiam Station Exit 2– Reality to validate POI and EP location | Backlog | 2026-10-12 | — | 1 | Sunny Ji | Major | Open Overdue | Medium |
 | MAPEX-14002 | Need latest source for CAN city center/name changes | In Progress | 2026-10-12 | — | 1 | Andy Palmer | Major | Open Overdue | Medium |
 | MAPEX-13370 | please detect invalid short CA stretches on highway=primary | In Progress | 2026-10-12 | — | 1 | Kalyan Dhaytonde | Major | Open Overdue | Medium |
+| MAPEX-14437 | IM-76046 - Need to check reality and provide confirmation for relocate RP | Backlog | 2026-10-16 | — | n/a | Seunghee Cho | Major | Due Soon – Not Started | Medium |
+| MAPEX-14436 | Start end location for DC creation | Backlog | 2026-10-15 | — | n/a | Natasha Klinghardt | Major | Due Soon – Not Started | Medium |
 | MAPEX-14434 | Source required for POI updated | Backlog | 2026-10-15 | — | n/a | Natasha Klinghardt | Major | Due Soon – Not Started | Medium |
 | MAPEX-14433 | SN and MD source and start to end location required | Backlog | 2026-10-15 | — | n/a | Natasha Klinghardt | Major | Due Soon – Not Started | Medium |
 | MAPEX-14432 | ASF vs real world metrics alignment review | Backlog | 2026-10-23 | — | n/a | Swarup Jadhav | Major | Due Soon – Not Started | Medium |
@@ -110,7 +115,6 @@ Tickets that are overdue, blocked, stale, or at risk of missing their deadline. 
 | MAPEX-14405 | Need support on IM-77040 (Bicycle restriction on "Part of Freeway) | Backlog | 2026-10-14 | — | n/a | Thomas Kenny | Critical | Due Soon – Not Started | Medium |
 | MAPEX-14349 | Need to support in IM-76401(Incorrect Postal Code on Address Point (PRT)) | Planned | 2026-10-14 | — | n/a | Massimo Vallainc | Critical | Due Soon – Not Started | Medium |
 | MAPEX-14345 | Restriction changes at Michigan,USA | Backlog | 2026-10-13 | — | n/a | Brandy Boyle | Major | Due Soon – Not Started | Medium |
-| MAPEX-14337 | 60988 - CaJ values for opposite maneuvers having same sign. | Open | 2026-10-17 | — | n/a | Anil Kasar | Major | Due Soon – Not Started | Medium |
 | MAPEX-14311 | POI IM-76768 KOR - Request to confirm the Official Name of POI | Backlog | 2026-10-13 | — | n/a | Sunny Ji | Major | Due Soon – Not Started | Medium |
 | MAPEX-14160 | KOR- Rest Area Capture Difficulties Due to Outdated Imagery and Vertex Source | Open | 2026-10-22 | — | n/a | Sooyeon Ahn | Major | Due Soon – Not Started | Medium |
 | MAPEX-14087 | [LMW] GBL Brunnels — USA: #3457 Eisenhower-Johnson Memorial Tunnel East/West (Directions) | Open | 2026-10-20 | — | n/a | Ted Yates | Major | Due Soon – Not Started | Medium |
@@ -125,7 +129,7 @@ Tickets that are overdue, blocked, stale, or at risk of missing their deadline. 
 | MAPEX-12404 | Review ARC1 degradation for Basemap using CA changes | Backlog | 2026-10-14 | — | n/a | Kalyan Dhaytonde | Major | Due Soon – Not Started | Medium |
 | MAPEX-12317 | 60888 - overtaking_prohibition misses direction namespace | Open | 2026-10-24 | — | n/a | Ujwala Bagade | Major | Due Soon – Not Started | Medium |
 | MAPEX-11830 | [Bifrost] compare Genesis and Orbis TBT TR errors | Backlog | 2026-10-16 | — | n/a | Erik Follensbee | Critical | Due Soon – Not Started | Medium |
-| MAPEX-10962 | SO_TMC Source 2026 LT 1 – Belgium version 3.9 | Verkeerscentrum | Open | 2026-10-23 | — | n/a | Kristian Georg Klem | Major | Due Soon – Not Started | Medium |
+| MAPEX-10962 | SO_TMC Source 2026 LT 1 – Belgium version 3.9 \| Verkeerscentrum | Open | 2026-10-23 | — | n/a | Kristian Georg Klem | Major | Due Soon – Not Started | Medium |
 | MAPEX-12985 | VS Exp Validation - RM Road Boundary | Open | — | — | n/a | Angelique Corion | Major | Stale | Low |
 | MAPEX-12709 | VS Exp Validation - cc- controlled access fixes | Open | — | — | n/a | Kalyan Dhaytonde | Major | Stale | Low |
 | MAPEX-12484 | VS Exp Validation - Access Restrictions | Open | — | — | n/a | Daniel Roy | Major | Stale | Low |
