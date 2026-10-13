@@ -216,33 +216,45 @@ class DisputedManualValidationTests(unittest.TestCase):
         notes_cell = td_matches[11]
         self.assertIn("to be filled", notes_cell)
 
-    def test_executive_summary_potential_disputes_label_and_notes(self):
+    def test_report_contains_only_requested_sections_and_review_notes(self):
         issue = self.make_issue(
             "MAPEX-100",
             comment={"comments": [self.comment("Thanks!")]},
         )
         report, _ = mapex_health_check.build_report([issue], set(), date(2026, 10, 13))
 
-        self.assertIn("**Potential Disputes (automated flags):**", report)
-        self.assertNotIn("**Rejection Rate:**", report)
-        self.assertIn("1 disputed/flagged candidate(s)", report)
+        self.assertEqual(
+            re.findall(r"^## .+$", report, re.MULTILINE),
+            ["## 1. Top 5 Urgent Tickets", "## 2. Rejected / Disputed Tickets"],
+        )
+        for removed in (
+            "Executive Summary", "Overall Health", "Schedule Health",
+            "Assignee Overload", "Recommendations", "At-Risk / Late Tickets", "Follow-up",
+        ):
+            self.assertNotIn(removed, report)
+        self.assertIn("No urgent tickets at this time.", report)
         self.assertIn("automated rule-based candidates", report)
-        self.assertIn("do not alter automated summary counts or RAG", report)
+        self.assertIn("do not feed back into future automated detection runs", report)
+        self.assertIn("Manual Validation", report)
+        self.assertIn("Validation Notes", report)
 
-    def test_rag_logic_preserved_with_disputed_threshold(self):
-        # 4 disputed tickets -> green (when no other risks)
-        issues = [
-            self.make_issue(f"MAPEX-{i}", comment={"comments": [self.comment("Thanks!")]})
-            for i in range(4)
+    def test_urgent_ranking_and_five_ticket_limit_preserved(self):
+        rows = [
+            {
+                "key": f"MAPEX-{i}", "summary": f"Urgent {i}", "risk_lvl": risk,
+                "days_overdue": days, "risk_cat": "Open Overdue",
+            }
+            for i, (risk, days) in enumerate([
+                ("High", 80), ("Critical", 100), ("High", 60),
+                ("Critical", 120), ("High", 70), ("High", 50), ("Medium", 200),
+            ])
         ]
-        disputed_rows_4 = [{"key": f"MAPEX-{i}"} for i in range(4)]
-        summary_4 = mapex_health_check.build_executive_summary(issues, disputed_rows_4, [], date(2026, 10, 13))
-        self.assertIn("**Overall Health:** 🟢", summary_4)
-
-        # 5 disputed tickets -> amber
-        disputed_rows_5 = [{"key": f"MAPEX-{i}"} for i in range(5)]
-        summary_5 = mapex_health_check.build_executive_summary(issues, disputed_rows_5, [], date(2026, 10, 13))
-        self.assertIn("**Overall Health:** 🟡", summary_5)
+        section = mapex_health_check.build_urgent_section(rows)
+        self.assertEqual(
+            re.findall(r"\*\*(MAPEX-\d+)\*\*", section),
+            ["MAPEX-3", "MAPEX-1", "MAPEX-0", "MAPEX-4", "MAPEX-2"],
+        )
+        self.assertIn("120d overdue", section)
 
     def test_escape_table_cell_helper(self):
         self.assertEqual(mapex_health_check._escape_table_cell(None), "")
