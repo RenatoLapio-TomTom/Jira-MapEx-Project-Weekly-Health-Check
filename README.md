@@ -10,8 +10,8 @@ Runs every Saturday, generates a Markdown report, and publishes it as a child pa
 1. The GitHub Actions workflow (`.github/workflows/mapex-health-check.yml`) triggers every **Saturday at ~17:00 CET** (16:00 UTC; DST drift of ±1 h is acceptable).
 2. The script (`scripts/mapex_health_check.py`) queries Jira for all MAPEX tickets created in the **last 90 days**, excluding tickets reported by the configured list of Map Expert account IDs.
 3. It produces a Markdown health report with four sections:
-   - **Executive Summary** — scope, rejection rate, schedule health, top urgent tickets, overload flags, recommendations, RAG indicator.
-   - **Rejected / Disputed Tickets** — tickets detected via rejection signals (incomplete resolution, reopening, dissatisfaction keywords, reporter post-closure comment).
+   - **Executive Summary** — scope, potential disputes (automated flags), schedule health, top urgent tickets, overload flags, recommendations, RAG indicator.
+   - **Rejected / Disputed Tickets** — automated rule-based candidates requiring human validation (incomplete resolution, reopening, dissatisfaction keywords, reporter post-closure comment). Includes two manual validation columns (**Manual Validation** and **Validation Notes**) for team review in Confluence.
    - **At-Risk / Late Tickets** — overdue, blocked, stale, due-soon, or unassigned tickets.
    - **Follow-up** — flagged tickets requiring assignee action.
 4. The report is:
@@ -80,3 +80,34 @@ Tickets in this list are suppressed from future reports.
 To reset history (e.g., to force re-reporting), clear the `reported_keys` array in that file and commit.
 
 Account IDs in `config/excluded_reporters.txt` exclude tickets when they are the reporter, and their comments are ignored for comment-based disputed signals (dissatisfaction keywords and reporter post-closure comments). A ticket can still be flagged by an independent signal, such as an Incomplete resolution or reopening, or by qualifying comments from other authors.
+
+---
+
+## Manual Validation of Disputed Tickets
+
+### Purpose and Candidate Nature
+Tickets appearing in the **Rejected / Disputed Tickets** section are **automated rule-based candidates requiring human review**—they are not AI verdicts or confirmed rejections.
+
+Detection relies on objective rules:
+- Resolution set to **Incomplete**
+- Ticket status **reopened after closure**
+- Dissatisfaction or rework keywords detected in comments
+- Any non-excluded comment posted by the reporter after closure when resolution is **Done**
+
+Because the post-closure comment rule flags any reporter activity after resolution without analyzing sentiment or context, informational updates, administrative handover notes, or polite follow-up messages may be flagged as candidate disputes and can be false positives.
+
+### Confluence Manual Review Instructions
+Every newly generated disputed ticket row includes two validation columns:
+- **Manual Validation** (defaults to `Pending review`)
+- **Validation Notes** (defaults to `_(to be filled: reason, reviewer, date)_`)
+
+These columns are **plain editable table cells** (not interactive dropdowns or macros). Any team member with Confluence page edit permissions can edit the published page to:
+1. Update **Manual Validation** to **Confirmed dispute**, **False positive**, or leave as **Pending review**.
+2. Fill in **Validation Notes** with the rationale/evidence, reviewer name, and review date (e.g., `False positive: informational DB update note | J. Doe, 2026-10-14`).
+
+### Operational Scope and Limitations
+- **Future pages only:** The validation columns are added to newly generated weekly health check pages going forward. Previously generated and published Confluence pages are not migrated or modified.
+- **One-way publishing (no ingestion):** The automation publishes a new dated child page each week and does not read back or ingest edits made in Confluence. Manual validation is a lightweight review table for human visibility and auditability.
+- **Automated summary counts and RAG:** Manual edits in Confluence do not update the automated executive-summary counts or RAG health indicators, and do not alter future automated detection runs.
+- **Dispute history suppression:** Persisted keys in `data/disputed_history.json` continue to suppress tickets from being re-reported in subsequent runs regardless of human validation outcomes. Review states are not carried forward to subsequent weekly runs.
+

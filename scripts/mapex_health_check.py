@@ -427,6 +427,20 @@ def compute_risk_level(days_overdue: int | None, prio: str, risk_cat: str) -> st
     return "Low"
 
 
+DEFAULT_MANUAL_VALIDATION = "Pending review"
+DEFAULT_VALIDATION_NOTES = "_(to be filled: reason, reviewer, date)_"
+
+
+def _escape_table_cell(value: Any) -> str:
+    """Escape pipes and replace newlines so cell content does not break table columns."""
+    if value is None:
+        return ""
+    text = str(value)
+    text = text.replace("\r\n", " ").replace("\n", " ").replace("\r", " ")
+    text = re.sub(r"(?<!\\)\|", r"\|", text)
+    return text.strip()
+
+
 # ---------------------------------------------------------------------------
 # Section builders
 # ---------------------------------------------------------------------------
@@ -457,6 +471,8 @@ def build_disputed_section(
             "signal": "; ".join(set(signals)),
             "evidence": " | ".join(evidence[:2]),
             "severity": sev,
+            "manual_validation": DEFAULT_MANUAL_VALIDATION,
+            "validation_notes": DEFAULT_VALIDATION_NOTES,
             "updated": updated_date(issue) or date.min,
         })
         new_keys.append(key)
@@ -466,19 +482,41 @@ def build_disputed_section(
     lines: list[str] = []
     lines.append("## 2. Rejected / Disputed Tickets\n")
     lines.append(
-        "Tickets where work was potentially rejected or challenged, "
-        "identified through resolution status, reopening history, comment keywords, "
-        "or reporter post-closure activity.\n"
+        "Tickets listed below are automated rule-based candidates requiring human validation "
+        "— they are not AI verdicts or confirmed rejections. Detection flags tickets based on "
+        "objective rules: Incomplete resolution, reopening history, dissatisfaction keywords in "
+        "comments, or any non-excluded comment posted by the reporter after closure when resolution "
+        "is Done. Because the post-closure rule flags any reporter activity after resolution regardless "
+        "of sentiment, informational, administrative, or polite follow-up comments can be false positives.\n"
+    )
+    lines.append(
+        "**Manual Review Instructions (Confluence Editor):**\n"
+        "The validation columns below are plain editable table cells (not interactive dropdowns). "
+        "A team member with Confluence page edit permissions should edit this page to record manual reviews:\n"
+        "- Change **Manual Validation** to **Confirmed dispute**, **False positive**, or leave as **Pending review**.\n"
+        "- In **Validation Notes**, record the reason/evidence supporting the decision, reviewer name, and review date "
+        "(e.g., `False positive: informational DB update note | J. Doe, 2026-10-14`).\n"
+        "- _Note:_ Manual edits in Confluence are for team visibility and auditability only; they do not update "
+        "automated executive-summary counts or RAG status, and do not feed back into future automated detection runs.\n"
     )
     if not rows:
         lines.append("_No new disputed tickets detected in this reporting period._\n")
     else:
-        lines.append("| Key | Summary | Status | Resolution | Reporter | Assignee | Signal | Evidence | Severity |")
-        lines.append("|-----|---------|--------|------------|----------|----------|--------|----------|----------|")
+        lines.append("| Key | Summary | Status | Resolution | Reporter | Assignee | Signal | Evidence | Severity | Manual Validation | Validation Notes |")
+        lines.append("|-----|---------|--------|------------|----------|----------|--------|----------|----------|-------------------|------------------|")
         for r in rows:
             lines.append(
-                f"| {r['key']} | {r['summary']} | {r['status']} | {r['resolution']} "
-                f"| {r['reporter']} | {r['assignee']} | {r['signal']} | {r['evidence']} | {r['severity']} |"
+                f"| {_escape_table_cell(r['key'])} "
+                f"| {_escape_table_cell(r['summary'])} "
+                f"| {_escape_table_cell(r['status'])} "
+                f"| {_escape_table_cell(r['resolution'])} "
+                f"| {_escape_table_cell(r['reporter'])} "
+                f"| {_escape_table_cell(r['assignee'])} "
+                f"| {_escape_table_cell(r['signal'])} "
+                f"| {_escape_table_cell(r['evidence'])} "
+                f"| {_escape_table_cell(r['severity'])} "
+                f"| {_escape_table_cell(r['manual_validation'])} "
+                f"| {_escape_table_cell(r['validation_notes'])} |"
             )
         lines.append("")
     return "\n".join(lines), new_keys
@@ -583,7 +621,7 @@ def build_at_risk_section(issues: list[dict]) -> tuple[str, list[dict]]:
             dd_str = str(r["due_date"]) if r["due_date"] else "—"
             cd_str = str(r["closed_date"]) if r["closed_date"] else "—"
             lines.append(
-                f"| {r['key']} | {r['summary']} | {r['status']} | {dd_str} | {cd_str} "
+                f"| {r['key']} | {_escape_table_cell(r['summary'])} | {r['status']} | {dd_str} | {cd_str} "
                 f"| {r['days_display']} | {r['assignee']} | {r['priority']} "
                 f"| {r['risk_cat']} | {r['risk_lvl']} |"
             )
@@ -683,7 +721,8 @@ def build_executive_summary(
         '<span style="color:red"><strong>**Remark: only tickets created by Non-Map Experts are considered here*</strong></span>\n'
     )
     lines.append(
-        f"**Rejection Rate:** {flagged_disputed} disputed/flagged vs {total_closed} total closed tickets in the last {LOOKBACK_DAYS} days\n"
+        f"**Potential Disputes (automated flags):** {flagged_disputed} disputed/flagged candidate(s) vs {total_closed} total closed tickets in the last {LOOKBACK_DAYS} days "
+        "_(automated rule-based candidates awaiting human validation, not confirmed rejections; manual Confluence edits do not alter automated summary counts or RAG health, and do not feed back into future detection)_\n"
     )
     lines.append("**Schedule Health:**\n")
     lines.append(f"- {len(overdue_open)} overdue ({critical_count} critical, {high_count} high)")
@@ -768,6 +807,38 @@ def build_report(
 # Confluence publishing
 # ---------------------------------------------------------------------------
 
+def _split_table_row(line: str) -> list[str]:
+    """Split a markdown table row by unescaped pipes, preserving escaped pipes."""
+    content = line.strip()
+    if content.startswith("|"):
+        content = content[1:]
+    if content.endswith("|") and not content.endswith(r"\|"):
+        content = content[:-1]
+
+    cells: list[str] = []
+    current: list[str] = []
+    escaped = False
+    for ch in content:
+        if escaped:
+            if ch == "|":
+                current.append("|")
+            else:
+                current.append("\\")
+                current.append(ch)
+            escaped = False
+        elif ch == "\\":
+            escaped = True
+        elif ch == "|":
+            cells.append("".join(current).strip())
+            current = []
+        else:
+            current.append(ch)
+    if escaped:
+        current.append("\\")
+    cells.append("".join(current).strip())
+    return cells
+
+
 def markdown_to_confluence_storage(md: str) -> str:
     """
     Convert markdown to a Confluence storage-format HTML representation.
@@ -814,7 +885,7 @@ def markdown_to_confluence_storage(md: str) -> str:
             if re.match(r"^\|[\s\-|:]+\|$", line):
                 i += 1
                 continue
-            cells = [c.strip() for c in line.strip("|").split("|")]
+            cells = _split_table_row(line)
             if not in_table:
                 output.append('<table><thead><tr>')
                 output.append("".join(f"<th>{_md_inline(c)}</th>" for c in cells))
