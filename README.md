@@ -9,14 +9,13 @@ Runs every Saturday, generates a Markdown report, and publishes it as a child pa
 
 1. The GitHub Actions workflow (`.github/workflows/mapex-health-check.yml`) triggers every **Saturday at ~17:00 CET** (16:00 UTC; DST drift of ±1 h is acceptable).
 2. The script (`scripts/mapex_health_check.py`) queries Jira for all MAPEX tickets created in the **last 90 days**, excluding tickets reported by the configured list of Map Expert account IDs.
-3. It produces a Markdown health report with four sections:
-   - **Executive Summary** — scope, potential disputes (automated flags), schedule health, top urgent tickets, overload flags, recommendations, RAG indicator.
+3. It produces a Markdown health report with only two sections:
+   - **Top 5 Urgent Tickets** — up to five Critical or High risk tickets, ordered by risk level and then days overdue, using the existing ticket eligibility rules.
    - **Rejected / Disputed Tickets** — automated rule-based candidates requiring human validation (current resolution Rejected, incomplete resolution, reopening, dissatisfaction keywords, reporter post-closure comment). Each row has a **Classification** tag (`[REJECTED]` or `[POTENTIAL DISPUTE]`) and two manual validation columns (**Manual Validation** and **Validation Notes**) for team review in Confluence.
-   - **At-Risk / Late Tickets** — overdue, blocked, stale, due-soon, or unassigned tickets.
-   - **Follow-up** — flagged tickets requiring assignee action.
 4. The report is:
    - Saved locally in `reports/mapex-health-YYYY-MM-DD.md` and committed back to the repository.
    - Published as a **child page** under `CONFLUENCE_PARENT_PAGE_ID` in `CONFLUENCE_SPACE_KEY`.
+   - Uses the base page title `Jira MapEx Project Health Check Report - YYYY-MM-DD` first. If that title already exists in the target space, tries `_v1`, `_v2`, and so on, creating the first available title without overwriting existing pages.
 5. Disputed ticket keys are persisted in `data/disputed_history.json` so they are **not re-reported** in future runs.
 
 ---
@@ -110,7 +109,7 @@ If a Rejected-resolution ticket also matches other signals, `[REJECTED]` takes p
 Scope of the Rejected rule:
 - Only the **current resolution** is checked. A historical resolution transition to Rejected, or a workflow **status** named Rejected, does not by itself trigger this signal.
 - The existing limits still apply unchanged: only tickets created in the last `LOOKBACK_DAYS` (default 90) are analyzed, tickets reported by accounts in `config/excluded_reporters.txt` are excluded, and keys already in `data/disputed_history.json` are not re-reported.
-- Rejected candidates are included in the executive-summary **Potential Disputes (automated flags)** count.
+- Rejected candidates appear in the **Rejected / Disputed Tickets** table; no executive-summary counts or RAG indicators are generated.
 
 ### Confluence Manual Review Instructions
 Every newly generated disputed ticket row includes two validation columns:
@@ -124,6 +123,5 @@ These columns are **plain editable table cells** (not interactive dropdowns or m
 ### Operational Scope and Limitations
 - **Future pages only:** The validation columns are added to newly generated weekly health check pages going forward. Previously generated and published Confluence pages are not migrated or modified.
 - **One-way publishing (no ingestion):** The automation publishes a new dated child page each week and does not read back or ingest edits made in Confluence. Manual validation is a lightweight review table for human visibility and auditability.
-- **Automated summary counts and RAG:** Manual edits in Confluence do not update the automated executive-summary counts or RAG health indicators, and do not alter future automated detection runs.
+- **Report scope:** New reports contain only **Top 5 Urgent Tickets** and **Rejected / Disputed Tickets**. Manual edits in Confluence do not alter future automated detection runs.
 - **Dispute history suppression:** Persisted keys in `data/disputed_history.json` continue to suppress tickets from being re-reported in subsequent runs regardless of human validation outcomes. Review states are not carried forward to subsequent weekly runs.
-

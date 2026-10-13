@@ -12,7 +12,6 @@ import os
 import re
 import sys
 import html
-from collections import Counter, defaultdict
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -526,8 +525,8 @@ def build_disputed_section(
         "- Change **Manual Validation** to **Confirmed dispute**, **False positive**, or leave as **Pending review**.\n"
         "- In **Validation Notes**, record the reason/evidence supporting the decision, reviewer name, and review date "
         "(e.g., `False positive: informational DB update note | J. Doe, 2026-10-14`).\n"
-        "- _Note:_ Manual edits in Confluence are for team visibility and auditability only; they do not update "
-        "automated executive-summary counts or RAG status, and do not feed back into future automated detection runs.\n"
+        "- _Note:_ Manual edits in Confluence are for team visibility and auditability only; "
+        "they do not feed back into future automated detection runs.\n"
     )
     if not rows:
         lines.append("_No new disputed tickets detected in this reporting period._\n")
@@ -660,135 +659,20 @@ def build_at_risk_section(issues: list[dict]) -> tuple[str, list[dict]]:
     return "\n".join(lines), rows
 
 
-def build_followup_section(at_risk_rows: list[dict], disputed_rows_text: str) -> str:
-    EXCLUDED_CATS = {"Due Soon – Not Started", "Closed Late"}
-    rows = [r for r in at_risk_rows if r["risk_cat"] not in EXCLUDED_CATS]
-
-    lines: list[str] = []
-    lines.append("## 4. Follow-up\n")
-    lines.append(
-        "The table below lists all flagged tickets (excluding _Due Soon – Not Started_ and _Closed Late_ "
-        "categories) that require follow-up action. Assignees are asked to review their tickets, "
-        "provide a status update in the **Follow-up Status** column, and propose a recommendation "
-        "in the **User Recommendation** column.\n"
-    )
-    lines.append(
-        "**Why follow-up matters:** Timely follow-up on flagged tickets prevents recurring issues, "
-        "supports continuous improvement, and ensures the project maintains healthy delivery rhythms. "
-        "For the **User Recommendation** column, consider actions such as: adjusting the process that led "
-        "to the delay, updating documentation, re-scoping the ticket, or escalating blockers.\n"
-    )
-    if not rows:
-        lines.append("_No tickets require follow-up at this time._\n")
-    else:
-        lines.append("| Key | Assignee | Follow-up Status | Reason for Flagging | User Recommendation |")
-        lines.append("|-----|----------|-----------------|---------------------|---------------------|")
-        for r in rows:
-            reason = f"{r['risk_cat']} — {r['risk_lvl']} risk"
-            lines.append(f"| {r['key']} | {r['assignee']} | _(to be filled)_ | {reason} | _(to be filled)_ |")
-        lines.append("")
-    return "\n".join(lines)
-
-
-def build_executive_summary(
-    issues: list[dict],
-    disputed_rows: list[dict],
-    at_risk_rows: list[dict],
-    report_date: date,
-) -> str:
-    since = TODAY_DT - __import__("datetime").timedelta(days=LOOKBACK_DAYS)
-    since_date = since.date()
-
-    total = len(issues)
-
-    # Rejection rate
-    total_closed = sum(1 for i in issues if status_category(i) == "done")
-    flagged_disputed = len(disputed_rows)
-
-    # Schedule health
-    overdue_open = [r for r in at_risk_rows if r["risk_cat"] == "Open Overdue"]
-    critical_count = sum(1 for r in overdue_open if r["risk_lvl"] == "Critical")
-    high_count = sum(1 for r in overdue_open if r["risk_lvl"] == "High")
-
-    # Blocked with due date (raw from issues, not filtered at-risk rows)
-    blocked_with_due = [
-        i for i in issues
-        if status_name(i).lower() == "blocked" and due_date(i) is not None
-    ]
-
-    due_soon_not_started = [r for r in at_risk_rows if r["risk_cat"] == "Due Soon – Not Started"]
-    stale_count = sum(1 for r in at_risk_rows if r["risk_cat"] == "Stale")
-
+def build_urgent_section(at_risk_rows: list[dict]) -> str:
     # Top 5 urgent
     urgent = sorted(
         [r for r in at_risk_rows if r["risk_lvl"] in ("Critical", "High")],
         key=lambda r: (RISK_ORDER.get(r["risk_lvl"], 99), -(r["days_overdue"] or 0)),
     )[:5]
 
-    # Assignee overload
-    assignee_counts: Counter = Counter()
-    for r in at_risk_rows:
-        if r["assignee"] and r["assignee"] != "—":
-            assignee_counts[r["assignee"]] += 1
-    overloaded = {k: v for k, v in assignee_counts.items() if v >= 3}
-
-    # RAG
-    critical_total = sum(1 for r in at_risk_rows if r["risk_lvl"] == "Critical")
-    high_total = sum(1 for r in at_risk_rows if r["risk_lvl"] == "High")
-    if critical_total > 0:
-        rag = "🔴"
-    elif high_total >= 3 or flagged_disputed >= 5:
-        rag = "🟡"
-    else:
-        rag = "🟢"
-
-    # Build output
-    lines: list[str] = []
-    lines.append("## 1. Executive Summary\n")
-    lines.append(f"**Overall Health:** {rag}\n")
-    lines.append(
-        f"**Scope:** {total} tickets analyzed | "
-        f"{since_date} → {report_date} "
-        '<span style="color:red"><strong>**Remark: only tickets created by Non-Map Experts are considered here*</strong></span>\n'
-    )
-    lines.append(
-        f"**Potential Disputes (automated flags):** {flagged_disputed} disputed/flagged candidate(s) vs {total_closed} total closed tickets in the last {LOOKBACK_DAYS} days "
-        "_(automated rule-based candidates awaiting human validation, not confirmed rejections; manual Confluence edits do not alter automated summary counts or RAG health, and do not feed back into future detection)_\n"
-    )
-    lines.append("**Schedule Health:**\n")
-    lines.append(f"- {len(overdue_open)} overdue ({critical_count} critical, {high_count} high)")
-    lines.append(f"- {len(blocked_with_due)} blocked tickets with due dates")
-    lines.append(f"- {len(due_soon_not_started)} due within 14 days, not started")
-    lines.append(f"- {stale_count} stale (no update 30+ days)\n")
-
-    lines.append("**Top 5 Urgent Tickets:**\n")
+    lines = ["## 1. Top 5 Urgent Tickets\n"]
     if urgent:
         for r in urgent:
             days_str = f"{r['days_overdue']}d overdue" if r["days_overdue"] else r["risk_cat"]
             lines.append(f"- **{r['key']}** ({r['risk_lvl']}) — {r['summary']} [{days_str}]")
     else:
         lines.append("- _No urgent tickets at this time._")
-    lines.append("")
-
-    lines.append("**Assignee Overload (3+ flagged tickets):**\n")
-    if overloaded:
-        for name, count in sorted(overloaded.items(), key=lambda x: -x[1]):
-            lines.append(f"- {name}: {count} flagged tickets")
-    else:
-        lines.append("- _No assignee overload detected._")
-    lines.append("")
-
-    lines.append("**Recommendations:**\n")
-    if critical_count > 0:
-        lines.append(f"1. 🔴 Immediately review and address {critical_count} critical overdue ticket(s) — these are >90 days late or blocker priority.")
-    if len(blocked_with_due) > 0:
-        lines.append(f"2. 🟡 Unblock {len(blocked_with_due)} ticket(s) that are blocked and have due dates to prevent further schedule slippage.")
-    if stale_count > 0:
-        lines.append(f"3. 🟡 Triage {stale_count} stale ticket(s) with no updates for 30+ days — close if obsolete or reassign/re-prioritize.")
-    if not any([critical_count > 0, len(blocked_with_due) > 0, stale_count > 0]):
-        lines.append("1. 🟢 Continue current delivery pace — no critical blockers detected.")
-        lines.append("2. Monitor upcoming due dates to prevent future overruns.")
-        lines.append("3. Review disputed tickets to improve ticket lifecycle quality.")
     lines.append("")
 
     return "\n".join(lines)
@@ -809,28 +693,13 @@ def build_report(
         issues, history, excluded_account_ids
     )
 
-    # Re-parse rows for exec summary usage
-    disputed_rows = []
-    for issue in issues:
-        key = issue_key(issue)
-        if key in history:
-            continue
-        signals, _ = detect_disputed_signals(issue, excluded_account_ids)
-        if signals:
-            disputed_rows.append({"key": key})
-
-    print("[INFO] Building at-risk section ...")
-    at_risk_text, at_risk_rows = build_at_risk_section(issues)
-
-    print("[INFO] Building executive summary ...")
-    exec_summary = build_executive_summary(issues, disputed_rows, at_risk_rows, report_date)
-
-    print("[INFO] Building follow-up section ...")
-    followup_text = build_followup_section(at_risk_rows, disputed_text)
+    print("[INFO] Building top urgent tickets ...")
+    _, at_risk_rows = build_at_risk_section(issues)
+    urgent_text = build_urgent_section(at_risk_rows)
 
     title = f"Jira MapEx Project Health Check Report - {report_date}"
     header = f"# {title}\n\n_Generated on {report_date} by automated GitHub Actions workflow._\n"
-    report = "\n\n".join([header, exec_summary, disputed_text, at_risk_text, followup_text])
+    report = "\n\n".join([header, urgent_text, disputed_text])
     return report, new_disputed_keys
 
 
@@ -1036,6 +905,29 @@ def _md_inline(text: str) -> str:
 
 def publish_to_confluence(title: str, content_md: str) -> None:
     storage_html = markdown_to_confluence_storage(content_md)
+    url = f"{CONFLUENCE_BASE_URL}/rest/api/content"
+    base_title = title
+    version = 0
+    while True:
+        existing = requests.get(
+            url,
+            auth=confluence_auth(),
+            params={
+                "type": "page",
+                "spaceKey": CONFLUENCE_SPACE_KEY,
+                "title": title,
+                "status": "current",
+                "limit": 1,
+            },
+            headers={"Accept": "application/json"},
+            timeout=60,
+        )
+        existing.raise_for_status()
+        if not existing.json()["results"]:
+            break
+        version += 1
+        title = f"{base_title}_v{version}"
+
     payload = {
         "type": "page",
         "title": title,
@@ -1048,7 +940,6 @@ def publish_to_confluence(title: str, content_md: str) -> None:
             }
         },
     }
-    url = f"{CONFLUENCE_BASE_URL}/rest/api/content"
     resp = requests.post(
         url,
         auth=confluence_auth(),

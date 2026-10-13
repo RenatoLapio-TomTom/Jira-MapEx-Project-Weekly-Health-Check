@@ -248,11 +248,12 @@ class DisputedRejectedResolutionTests(unittest.TestCase):
             [issue], {"MAPEX-SEEN"}, date(2026, 10, 13)
         )
         self.assertEqual(report_keys, [])
-        self.assertIn("0 disputed/flagged candidate(s)", report)
+        self.assertIn("_No new disputed tickets detected in this reporting period._", report)
+        self.assertNotIn("| MAPEX-SEEN |", report)
 
-    # -- Report / summary ----------------------------------------------------
+    # -- Report --------------------------------------------------------------
 
-    def test_summary_count_consistent_with_table(self):
+    def test_report_keys_consistent_with_table(self):
         issues = [
             self.make_issue("MAPEX-301"),  # Rejected, no comments
             self.make_issue(
@@ -267,7 +268,10 @@ class DisputedRejectedResolutionTests(unittest.TestCase):
             issues, {"MAPEX-304"}, date(2026, 10, 13)
         )
         self.assertEqual(sorted(new_keys), ["MAPEX-301", "MAPEX-302"])
-        self.assertIn("2 disputed/flagged candidate(s)", report)
+        self.assertIn("| MAPEX-301 |", report)
+        self.assertIn("| MAPEX-302 |", report)
+        self.assertNotIn("| MAPEX-303 |", report)
+        self.assertNotIn("| MAPEX-304 |", report)
 
         section, _ = mapex_health_check.build_disputed_section(issues, {"MAPEX-304"})
         rows = self.table_rows(section)

@@ -118,7 +118,7 @@ class DisputedCommentExclusionTests(unittest.TestCase):
         ]
         self.assertIn("Reporter commented after closure", self.detect(issue)[0])
 
-    def test_report_section_and_executive_summary_use_same_exclusions(self):
+    def test_report_preserves_comment_exclusions(self):
         excluded_issue = self.make_issue(
             comment={"comments": [self.comment("Please redo this", "excluded-account")]}
         )
@@ -133,7 +133,6 @@ class DisputedCommentExclusionTests(unittest.TestCase):
         )
 
         self.assertEqual(new_keys, ["MAPEX-2"])
-        self.assertIn("1 disputed/flagged", report)
         disputed_section = report.split("## 2. Rejected / Disputed Tickets", 1)[1]
         self.assertNotIn("| MAPEX-1 |", disputed_section)
         self.assertIn("| MAPEX-2 |", disputed_section)
