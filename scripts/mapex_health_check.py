@@ -324,10 +324,14 @@ def was_closed_and_reopened(issue: dict) -> bool:
     return False
 
 
-def detect_disputed_signals(issue: dict) -> tuple[list[str], list[str]]:
+def detect_disputed_signals(
+    issue: dict,
+    excluded_account_ids: set[str] | None = None,
+) -> tuple[list[str], list[str]]:
     """Return (signals, evidence) lists for disputed detection."""
     signals: list[str] = []
     evidence: list[str] = []
+    excluded_account_ids = excluded_account_ids or set()
 
     # Signal 1: resolution = Incomplete
     if resolution_name(issue).lower() == "incomplete":
@@ -342,13 +346,16 @@ def detect_disputed_signals(issue: dict) -> tuple[list[str], list[str]]:
     # Signal 3: keywords in comments
     comments = get_field(issue, "comment", "comments") or []
     for c in comments:
+        author = c.get("author") or {}
+        author_id = author.get("accountId", "")
+        if author_id and author_id in excluded_account_ids:
+            continue
         body = c.get("body", "")
         if isinstance(body, dict):
             # Jira API v3 uses Atlassian Document Format
             body = _extract_adf_text(body)
         if REJECTION_KEYWORDS.search(body) and not FALSE_POSITIVE_CONTEXTS.search(body):
-            author_id = (c.get("author") or {}).get("accountId", "")
-            author_name = (c.get("author") or {}).get("displayName", author_id)
+            author_name = author.get("displayName", author_id)
             snippet = body[:120].replace("\n", " ").strip()
             signals.append("Dissatisfaction keyword in comment")
             evidence.append(f'Comment by {author_name}: "{snippet}…"')
@@ -360,7 +367,10 @@ def detect_disputed_signals(issue: dict) -> tuple[list[str], list[str]]:
         reporter_id = (get_field(issue, "reporter") or {}).get("accountId", "")
         comments = get_field(issue, "comment", "comments") or []
         for c in comments:
-            c_author = (c.get("author") or {}).get("accountId", "")
+            author = c.get("author") or {}
+            c_author = author.get("accountId", "")
+            if c_author and c_author in excluded_account_ids:
+                continue
             c_date = parse_date(c.get("created"))
             if c_author == reporter_id and c_date and rd and c_date > rd:
                 body = c.get("body", "")
@@ -421,7 +431,11 @@ def compute_risk_level(days_overdue: int | None, prio: str, risk_cat: str) -> st
 # Section builders
 # ---------------------------------------------------------------------------
 
-def build_disputed_section(issues: list[dict], history: set[str]) -> tuple[str, list[str]]:
+def build_disputed_section(
+    issues: list[dict],
+    history: set[str],
+    excluded_account_ids: set[str] | None = None,
+) -> tuple[str, list[str]]:
     rows: list[dict] = []
     new_keys: list[str] = []
 
@@ -429,7 +443,7 @@ def build_disputed_section(issues: list[dict], history: set[str]) -> tuple[str, 
         key = issue_key(issue)
         if key in history:
             continue
-        signals, evidence = detect_disputed_signals(issue)
+        signals, evidence = detect_disputed_signals(issue, excluded_account_ids)
         if not signals:
             continue
         sev = severity_for_signals(signals)
@@ -714,9 +728,16 @@ def build_executive_summary(
 # Report assembly
 # ---------------------------------------------------------------------------
 
-def build_report(issues: list[dict], history: set[str], report_date: date) -> tuple[str, list[str]]:
+def build_report(
+    issues: list[dict],
+    history: set[str],
+    report_date: date,
+    excluded_account_ids: set[str] | None = None,
+) -> tuple[str, list[str]]:
     print("[INFO] Building disputed section ...")
-    disputed_text, new_disputed_keys = build_disputed_section(issues, history)
+    disputed_text, new_disputed_keys = build_disputed_section(
+        issues, history, excluded_account_ids
+    )
 
     # Re-parse rows for exec summary usage
     disputed_rows = []
@@ -724,7 +745,7 @@ def build_report(issues: list[dict], history: set[str], report_date: date) -> tu
         key = issue_key(issue)
         if key in history:
             continue
-        signals, _ = detect_disputed_signals(issue)
+        signals, _ = detect_disputed_signals(issue, excluded_account_ids)
         if signals:
             disputed_rows.append({"key": key})
 
@@ -955,7 +976,7 @@ def main() -> None:
     if not issues:
         print("[WARN] No issues found — check JQL / credentials.", file=sys.stderr)
 
-    report_md, new_keys = build_report(issues, history, TODAY)
+    report_md, new_keys = build_report(issues, history, TODAY, excluded)
 
     # Save report locally
     reports_dir = REPO_ROOT / "reports"
